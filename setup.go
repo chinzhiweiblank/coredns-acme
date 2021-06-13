@@ -73,7 +73,7 @@ func parseACME(c *caddy.Controller) (certmagic.ACMEManager, error) {
 				if len(args) == 1 {
 					httpPort, err = strconv.Atoi(args[0])
 					if err != nil {
-						return acmeTemplate, c.Errf("HTTP port is not a string: %#v", args)
+						return acmeTemplate, c.Errf("HTTP port is not an int: %#v", args)
 					}
 				}
 				acmeTemplate.AltHTTPPort = httpPort
@@ -88,7 +88,7 @@ func parseACME(c *caddy.Controller) (certmagic.ACMEManager, error) {
 				if len(args) == 1 {
 					tlsAlpnPort, err = strconv.Atoi(args[0])
 					if err != nil {
-						return acmeTemplate, c.Errf("TlsAlpn port is not a string: %#v", args)
+						return acmeTemplate, c.Errf("TlsAlpn port is not an int: %#v", args)
 					}
 				}
 				acmeTemplate.AltTLSALPNPort = tlsAlpnPort

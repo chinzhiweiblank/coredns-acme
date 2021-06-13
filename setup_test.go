@@ -30,6 +30,28 @@ func TestSetup(t *testing.T) {
 			},
 		},
 		{
+			"Correct Config with default http01 port",
+			`acme example.domain {
+				tlsalpn 90
+			}`,
+			false,
+			certmagic.ACMEManager{
+				DisableHTTPChallenge:    false,
+				DisableTLSALPNChallenge: false,
+				AltHTTPPort:             80,
+				AltTLSALPNPort:          90,
+			},
+		},
+
+		{
+			"Invalid port",
+			`acme example.domain {
+				http01 hello
+			}`,
+			true,
+			certmagic.ACMEManager{},
+		},
+		{
 			"Invalid challenge",
 			`acme example.domain {
 				invalid_challenge
@@ -40,7 +62,7 @@ func TestSetup(t *testing.T) {
 		{
 			"Missing domain argument",
 			`acme {
-				dns01
+				http01
 			}`,
 			true,
 			certmagic.ACMEManager{},
