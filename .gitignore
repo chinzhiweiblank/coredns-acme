@@ -12,5 +12,3 @@
 *.out
 
 # Dependency directories (remove the comment below to include it)
-
-acme_test.go
