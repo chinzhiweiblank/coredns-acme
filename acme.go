@@ -7,6 +7,8 @@ import (
 	"net/http"
 
 	"github.com/caddyserver/certmagic"
+	"github.com/coredns/coredns/request"
+	"github.com/miekg/dns"
 )
 
 const (
@@ -18,16 +20,10 @@ const (
 type ACME struct {
 	Manager *certmagic.ACMEManager
 	Config  *certmagic.Config
+	Zone    string
 }
 
-type Config struct {
-	Token  string
-	User   string
-	Server string
-	Domain string
-}
-
-func NewACME(acmeManagerTemplate certmagic.ACMEManager) ACME {
+func NewACME(acmeManagerTemplate certmagic.ACMEManager, zone string) ACME {
 	configTemplate := certmagic.NewDefault()
 	cache := certmagic.NewCache(certmagic.CacheOptions{
 		GetConfigForCert: func(cert certmagic.Certificate) (*certmagic.Config, error) {
@@ -40,6 +36,7 @@ func NewACME(acmeManagerTemplate certmagic.ACMEManager) ACME {
 	return ACME{
 		Config:  config,
 		Manager: acmeManager,
+		Zone:    zone,
 	}
 }
 
@@ -52,26 +49,30 @@ func (a ACME) OnStartup() error {
 		_, err = tls.Listen("tcp", tlsalpnPort, tlsConfig)
 	}()
 	go func() { err = http.ListenAndServe(httpPort, a.Manager.HTTPChallengeHandler(http.NewServeMux())) }()
+	go func() {
+		dns.HandleFunc(a.Zone, func(w dns.ResponseWriter, r *dns.Msg) {
+			state := request.Request{W: w, Req: r}
+			var zone string
+			if len(r.Question) > 0 {
+				zone = r.Question[0].Name
+			}
+			if checkDNSChallenge(zone) {
+				err = solveDNSChallenge(context.Background(), zone, state)
+			}
+		})
+		server := &dns.Server{Addr: ":80", Net: "tcp"}
+		err = server.ListenAndServe()
+		defer server.Shutdown()
+	}()
 	return err
 }
 
-func (a ACME) IssueCert(domains []string) error {
-	err := a.Config.ManageSync(domains)
+func (a ACME) IssueCert(zones []string) error {
+	err := a.Config.ManageSync(zones)
 	return err
 }
 
-func (a ACME) GetCert(domain string) error {
-	err := a.Config.ObtainCert(context.Background(), domain, false)
+func (a ACME) GetCert(zone string) error {
+	err := a.Config.ObtainCert(context.Background(), zone, false)
 	return err
-}
-
-func (a ACME) RevokeCert(domains []string) error {
-	for _, domain := range domains {
-		ctx := context.Background()
-		err := a.Config.RevokeCert(ctx, domain, 0, false)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
 }

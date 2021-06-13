@@ -6,15 +6,7 @@
 ## Description
 
 ## Syntax
-Original Proposal
-~~~ txt
-acme DOMAIN_NAME {
-    challenge http01|dns01|tlsalpn
-}
-~~~
-
 ~~~txt
-New Proposal
 acme DOMAIN_NAME {
     challenge {
         http01 PORT |
