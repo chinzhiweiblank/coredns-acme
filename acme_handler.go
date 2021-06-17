@@ -26,6 +26,10 @@ func (h AcmeHandler) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.
 		if err != nil {
 			return 0, err
 		}
+		err = configureTLS(A, Config)
+		if err != nil {
+			return 0, err
+		}
 	}
 	return h.Next.ServeDNS(ctx, w, r)
 }

@@ -7,8 +7,6 @@ import (
 	"net/http"
 
 	"github.com/caddyserver/certmagic"
-	"github.com/coredns/coredns/request"
-	"github.com/miekg/dns"
 )
 
 const (
@@ -45,11 +43,15 @@ func (a ACME) OnStartup() error {
 	tlsalpnPort := fmt.Sprintf(":%d", a.Manager.AltTLSALPNPort)
 	tlsConfig := a.Config.TLSConfig()
 	var err error
-	go func() {
-		_, err = tls.Listen("tcp", tlsalpnPort, tlsConfig)
-	}()
-	go func() { err = http.ListenAndServe(httpPort, a.Manager.HTTPChallengeHandler(http.NewServeMux())) }()
-	go func() {
+	if !a.Manager.DisableHTTPChallenge {
+		go func() {
+			_, err = tls.Listen("tcp", tlsalpnPort, tlsConfig)
+		}()
+	}
+	if !a.Manager.DisableTLSALPNChallenge {
+		go func() { err = http.ListenAndServe(httpPort, a.Manager.HTTPChallengeHandler(http.NewServeMux())) }()
+	}
+	/*go func() {
 		dns.HandleFunc(a.Zone, func(w dns.ResponseWriter, r *dns.Msg) {
 			state := request.Request{W: w, Req: r}
 			var zone string
@@ -63,7 +65,7 @@ func (a ACME) OnStartup() error {
 		server := &dns.Server{Addr: ":80", Net: "tcp"}
 		err = server.ListenAndServe()
 		defer server.Shutdown()
-	}()
+	}()*/
 	return err
 }
 
@@ -73,6 +75,6 @@ func (a ACME) IssueCert(zones []string) error {
 }
 
 func (a ACME) GetCert(zone string) error {
-	err := a.Config.ObtainCert(context.Background(), zone, false)
+	err := a.Config.ObtainCertSync(context.Background(), zone)
 	return err
 }

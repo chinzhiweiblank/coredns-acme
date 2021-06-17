@@ -13,6 +13,9 @@ import (
 
 const pluginName = "acme"
 
+var A ACME
+var Config *dnsserver.Config
+
 func init() { plugin.Register(pluginName, setup) }
 
 func setup(c *caddy.Controller) error {
@@ -21,12 +24,13 @@ func setup(c *caddy.Controller) error {
 		return plugin.Error("acme", err)
 	}
 	config := dnsserver.GetConfig(c)
+	Config = config
 	config.AddPlugin(func(next plugin.Handler) plugin.Handler {
 		return AcmeHandler{Next: next}
 	})
 	zone := config.Zone
-	a := NewACME(acmeTemplate, zone)
-	err = configureTLS(a, config)
+	A = NewACME(acmeTemplate, zone)
+	err = configureTLS(A, config)
 	if err != nil {
 		return c.Errf("Unexpected error: %s", err.Error())
 	}
@@ -58,7 +62,7 @@ func parseACME(c *caddy.Controller) (certmagic.ACMEManager, error) {
 	var err error
 	for c.Next() {
 		args := c.RemainingArgs()
-		if len(args) != 1 {
+		if len(args) != 0 {
 			return acmeTemplate, c.Errf("Unexpected number of arguments: %#v", args)
 		}
 		for c.NextBlock() {

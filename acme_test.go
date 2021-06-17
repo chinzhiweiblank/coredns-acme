@@ -5,9 +5,14 @@ import (
 
 	"github.com/caddyserver/certmagic"
 	"github.com/coredns/coredns/core/dnsserver"
+	"github.com/libdns/libdns"
 )
 
 func TestACME(t *testing.T) {
+	dnsProvider := Provider{
+		recordMap: make(map[string][]libdns.Record),
+	}
+
 	zone := "daedric.online"
 	acmeTemplate := certmagic.ACMEManager{
 		CA:                      certmagic.LetsEncryptStagingCA,
@@ -17,7 +22,7 @@ func TestACME(t *testing.T) {
 		DisableHTTPChallenge:    false,
 		DisableTLSALPNChallenge: false,
 		DNS01Solver: &certmagic.DNS01Solver{
-			DNSProvider: &provider,
+			DNSProvider: &dnsProvider,
 		},
 	}
 	dnsConfig := dnsserver.Config{

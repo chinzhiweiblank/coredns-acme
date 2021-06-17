@@ -17,7 +17,7 @@ func TestSetup(t *testing.T) {
 	}{
 		{
 			"Correct Config with correct challenge",
-			`acme example.domain {
+			`acme {
 				http01 89
 				tlsalpn 90
 			}`,
@@ -31,7 +31,7 @@ func TestSetup(t *testing.T) {
 		},
 		{
 			"Correct Config with default http01 port",
-			`acme example.domain {
+			`acme {
 				tlsalpn 90
 			}`,
 			false,
@@ -42,10 +42,17 @@ func TestSetup(t *testing.T) {
 				AltTLSALPNPort:          90,
 			},
 		},
-
 		{
 			"Invalid port",
-			`acme example.domain {
+			`acme {
+				http01 hello
+			}`,
+			true,
+			certmagic.ACMEManager{},
+		},
+		{
+			"Invalid extra arguments",
+			`acme test.domain {
 				http01 hello
 			}`,
 			true,
@@ -53,17 +60,9 @@ func TestSetup(t *testing.T) {
 		},
 		{
 			"Invalid challenge",
-			`acme example.domain {
+			`acme {
 				invalid_challenge
 			`,
-			true,
-			certmagic.ACMEManager{},
-		},
-		{
-			"Missing domain argument",
-			`acme {
-				http01
-			}`,
 			true,
 			certmagic.ACMEManager{},
 		},
