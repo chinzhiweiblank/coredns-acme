@@ -1,16 +1,17 @@
 package acme
 
 import (
+	"sync"
 	"testing"
 
 	"github.com/caddyserver/certmagic"
-	"github.com/coredns/coredns/core/dnsserver"
 	"github.com/libdns/libdns"
 )
 
 func TestACME(t *testing.T) {
 	dnsProvider := Provider{
 		recordMap: make(map[string][]libdns.Record),
+		m:         sync.Mutex{},
 	}
 
 	zone := "daedric.online"
@@ -25,15 +26,17 @@ func TestACME(t *testing.T) {
 			DNSProvider: &dnsProvider,
 		},
 	}
-	dnsConfig := dnsserver.Config{
-		Zone: zone,
-	}
 	a := NewACME(acmeTemplate, zone)
-	err := configureTLS(a, &dnsConfig)
+	err := a.OnStartup()
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-	if len(dnsConfig.TLSConfig.Certificates) == 0 {
-		t.Errorf("Certificates were not configured for TLS")
+	err = a.IssueCert([]string{zone})
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	err = a.GetCert(zone)
+	if err != nil {
+		t.Fatalf(err.Error())
 	}
 }

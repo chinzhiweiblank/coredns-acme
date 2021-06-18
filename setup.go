@@ -17,10 +17,10 @@ var A ACME
 
 func init() {
 	plugin.Register(pluginName, setup)
-	err := A.IssueCert([]string{A.Zone})
+	/*err := A.IssueCert([]string{A.Zone})
 	if err != nil {
 		panic(err)
-	}
+	}*/
 }
 
 func setup(c *caddy.Controller) error {

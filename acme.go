@@ -25,7 +25,7 @@ func NewACME(acmeManagerTemplate certmagic.ACMEManager, zone string) ACME {
 	configTemplate := certmagic.NewDefault()
 	cache := certmagic.NewCache(certmagic.CacheOptions{
 		GetConfigForCert: func(cert certmagic.Certificate) (*certmagic.Config, error) {
-			return configTemplate, nil
+			return certmagic.NewDefault(), nil
 		},
 	})
 	config := certmagic.New(cache, *configTemplate)
@@ -75,6 +75,6 @@ func (a ACME) IssueCert(zones []string) error {
 }
 
 func (a ACME) GetCert(zone string) error {
-	err := a.Config.ObtainCertSync(context.Background(), zone)
+	err := a.Config.ObtainCert(context.Background(), zone, false)
 	return err
 }
