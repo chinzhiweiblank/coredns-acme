@@ -14,9 +14,14 @@ import (
 const pluginName = "acme"
 
 var A ACME
-var Config *dnsserver.Config
 
-func init() { plugin.Register(pluginName, setup) }
+func init() {
+	plugin.Register(pluginName, setup)
+	err := A.IssueCert([]string{A.Zone})
+	if err != nil {
+		panic(err)
+	}
+}
 
 func setup(c *caddy.Controller) error {
 	acmeTemplate, err := parseACME(c)
@@ -24,13 +29,12 @@ func setup(c *caddy.Controller) error {
 		return plugin.Error("acme", err)
 	}
 	config := dnsserver.GetConfig(c)
-	Config = config
 	config.AddPlugin(func(next plugin.Handler) plugin.Handler {
 		return AcmeHandler{Next: next}
 	})
 	zone := config.Zone
 	A = NewACME(acmeTemplate, zone)
-	err = configureTLS(A, config)
+	err = A.OnStartup()
 	if err != nil {
 		return c.Errf("Unexpected error: %s", err.Error())
 	}
@@ -102,6 +106,7 @@ func parseACME(c *caddy.Controller) (certmagic.ACMEManager, error) {
 			}
 		}
 	}
+	acmeTemplate.CA = certmagic.LetsEncryptStagingCA
 	return acmeTemplate, nil
 }
 
