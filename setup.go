@@ -38,6 +38,17 @@ func setup(c *caddy.Controller) error {
 	if err != nil {
 		return c.Errf("Unexpected error: %s", err.Error())
 	}
+	c.OnStartup(func() error {
+		err = A.IssueCert([]string{zone})
+		if err != nil {
+			return c.Errf("Unexpected error: %s", err.Error())
+		}
+		err = configureTLS(A, config)
+		if err != nil {
+			return c.Errf("Unexpected error: %s", err.Error())
+		}
+		return nil
+	})
 	return nil
 }
 
