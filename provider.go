@@ -10,24 +10,25 @@ import (
 )
 
 type Provider struct {
-	recordMap map[string][]libdns.Record
-	m         sync.Mutex
+	recordsForZone map[string][]libdns.Record
+	m              sync.Mutex
 }
 
-var provider = Provider{
-	recordMap: make(map[string][]libdns.Record),
+func (p *Provider) listAllRecords(ctx context.Context, zone string) []libdns.Record {
+	records, found := p.recordsForZone[zone]
+	if !found {
+		return []libdns.Record{}
+	}
+	return records
 }
 
 func (p *Provider) AppendRecords(ctx context.Context, zone string, recs []libdns.Record) ([]libdns.Record, error) {
 	p.m.Lock()
 	defer p.m.Unlock()
-	records := []libdns.Record{}
-	if _, found := p.recordMap[zone]; found {
-		records = p.recordMap[zone]
-	}
+	records := p.listAllRecords(ctx, zone)
 	records = append(records, recs...)
-	p.recordMap[zone] = records
-	return records, nil
+	p.recordsForZone[zone] = records
+	return recs, nil
 }
 
 func (p *Provider) DeleteRecords(ctx context.Context, zone string, recs []libdns.Record) ([]libdns.Record, error) {
@@ -35,10 +36,7 @@ func (p *Provider) DeleteRecords(ctx context.Context, zone string, recs []libdns
 	defer p.m.Unlock()
 	deletedRecords := []libdns.Record{}
 	remainingRecords := []libdns.Record{}
-	records, found := p.recordMap[zone]
-	if !found {
-		return deletedRecords, nil
-	}
+	records := p.listAllRecords(ctx, zone)
 	shouldDelete := make([]bool, len(records))
 	for _, deleteRecord := range recs {
 		for i, record := range records {
@@ -54,18 +52,22 @@ func (p *Provider) DeleteRecords(ctx context.Context, zone string, recs []libdns
 			deletedRecords = append(deletedRecords, record)
 		}
 	}
-	p.recordMap[zone] = remainingRecords
+	p.recordsForZone[zone] = remainingRecords
 	return deletedRecords, nil
 }
 
 func (p *Provider) GetRecords(ctx context.Context, zone string) ([]libdns.Record, error) {
 	p.m.Lock()
 	defer p.m.Unlock()
-
-	records, found := p.recordMap[zone]
-	if !found {
-		return nil, fmt.Errorf("records for zone %s not found", zone)
+	records := p.listAllRecords(ctx, zone)
+	if len(records) == 0 {
+		return records, fmt.Errorf("no records were found for %v", zone)
 	}
-
 	return records, nil
 }
+
+var (
+	_ libdns.RecordGetter   = (*Provider)(nil)
+	_ libdns.RecordAppender = (*Provider)(nil)
+	_ libdns.RecordDeleter  = (*Provider)(nil)
+)
