@@ -24,7 +24,7 @@ func generateRandomRecords(n int) []libdns.Record {
 	}
 	return records
 }
-func TestProvider(t *testing.T) {
+func TestProviderAppendRecords(t *testing.T) {
 	provider := Provider{
 		recordsForZone: make(map[string][]libdns.Record),
 	}

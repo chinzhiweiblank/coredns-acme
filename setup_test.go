@@ -14,10 +14,23 @@ func TestSetup(t *testing.T) {
 		input        string
 		shouldErr    bool
 		acmeTemplate certmagic.ACMEManager
+		zone         string
 	}{
 		{
+			"Correct Config with only DNS challenge",
+			`acme test.domain`,
+			false,
+			certmagic.ACMEManager{
+				DisableHTTPChallenge:    true,
+				DisableTLSALPNChallenge: true,
+				AltHTTPPort:             80,
+				AltTLSALPNPort:          443,
+			},
+			"test.domain",
+		},
+		{
 			"Correct Config with correct challenge",
-			`acme {
+			`acme test.domain {
 				http01 89
 				tlsalpn 90
 			}`,
@@ -28,10 +41,11 @@ func TestSetup(t *testing.T) {
 				AltHTTPPort:             89,
 				AltTLSALPNPort:          90,
 			},
+			"test.domain",
 		},
 		{
 			"Correct Config with default http01 port",
-			`acme {
+			`acme test.domain {
 				tlsalpn 90
 			}`,
 			false,
@@ -41,40 +55,45 @@ func TestSetup(t *testing.T) {
 				AltHTTPPort:             80,
 				AltTLSALPNPort:          90,
 			},
+			"test.domain",
 		},
 		{
-			"Invalid port",
+			"Missing domain",
 			`acme {
 				http01 hello
 			}`,
 			true,
 			certmagic.ACMEManager{},
+			"",
 		},
 		{
-			"Invalid extra arguments",
+			"Invalid port",
 			`acme test.domain {
 				http01 hello
 			}`,
 			true,
 			certmagic.ACMEManager{},
+			"test.domain",
 		},
 		{
 			"Invalid challenge",
-			`acme {
+			`acme test.domain {
 				invalid_challenge
 			`,
 			true,
 			certmagic.ACMEManager{},
+			"test.domain",
 		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			c := caddy.NewTestController("acme", test.input)
-			if acmeTemplate, err := parseACME(c); (err != nil) != test.shouldErr {
-				if err != nil && reflect.DeepEqual(test.acmeTemplate, acmeTemplate) {
-					t.Errorf("Error: AcmeTemplate %+v is not configured as it should be %+v", acmeTemplate, test.acmeTemplate)
-				}
+			acmeTemplate, zone, err := parseACME(c)
+			if (err != nil) != test.shouldErr {
 				t.Errorf("Error: setup() error = %v, shouldErr %v", err, test.shouldErr)
+				if !test.shouldErr && err != nil && reflect.DeepEqual(test.acmeTemplate, acmeTemplate) && test.zone == zone {
+					t.Errorf("Error: AcmeTemplate %+v Zone %s is not configured as it should be %+v", acmeTemplate, zone, test.acmeTemplate)
+				}
 			}
 		})
 	}
