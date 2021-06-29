@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/miekg/dns"
@@ -22,17 +21,9 @@ func findZoneByFQDN(fqdn string, nameservers []string) (string, error) {
 	return soa.zone, nil
 }
 
-func lookupSoaByFqdn(fqdn string, nameservers []string) (*soaCacheEntry, error) {
+func lookupSoaByFqdn(fqdn string, nameservers []string) (*soaEntry, error) {
 	if !strings.HasSuffix(fqdn, ".") {
 		fqdn += "."
-	}
-
-	fqdnSOACacheMu.Lock()
-	defer fqdnSOACacheMu.Unlock()
-
-	// prefer cached version if fresh
-	if ent := fqdnSOACache[fqdn]; ent != nil && !ent.isExpired() {
-		return ent, nil
 	}
 
 	ent, err := fetchSoaByFqdn(fqdn, nameservers)
@@ -40,20 +31,10 @@ func lookupSoaByFqdn(fqdn string, nameservers []string) (*soaCacheEntry, error) 
 		return nil, err
 	}
 
-	// save result to cache, but don't allow
-	// the cache to grow out of control
-	if len(fqdnSOACache) >= 1000 {
-		for key := range fqdnSOACache {
-			delete(fqdnSOACache, key)
-			break
-		}
-	}
-	fqdnSOACache[fqdn] = ent
-
 	return ent, nil
 }
 
-func fetchSoaByFqdn(fqdn string, nameservers []string) (*soaCacheEntry, error) {
+func fetchSoaByFqdn(fqdn string, nameservers []string) (*soaEntry, error) {
 	var err error
 	var in *dns.Msg
 
@@ -68,7 +49,7 @@ func fetchSoaByFqdn(fqdn string, nameservers []string) (*soaCacheEntry, error) {
 		if in == nil {
 			continue
 		}
-		fmt.Println(in)
+
 		switch in.Rcode {
 		case dns.RcodeSuccess:
 			// Check if we got a SOA RR in the answer section
@@ -84,7 +65,7 @@ func fetchSoaByFqdn(fqdn string, nameservers []string) (*soaCacheEntry, error) {
 
 			for _, ans := range in.Answer {
 				if soa, ok := ans.(*dns.SOA); ok {
-					return newSoaCacheEntry(soa), nil
+					return newSoaEntry(soa), nil
 				}
 			}
 		case dns.RcodeNameError:
@@ -134,8 +115,6 @@ func createDNSMsg(fqdn string, rtype uint16, recursive bool) *dns.Msg {
 func sendDNSQuery(m *dns.Msg, ns string) (*dns.Msg, error) {
 	udp := &dns.Client{Net: "udp", Timeout: dnsTimeout}
 	in, _, err := udp.Exchange(m, ns)
-	// two kinds of errors we can handle by retrying with TCP:
-	// truncation and timeout; see https://github.com/caddyserver/caddy/issues/3639
 	truncated := in != nil && in.Truncated
 	timeoutErr := err != nil && strings.Contains(err.Error(), "timeout")
 	if truncated || timeoutErr {
@@ -159,24 +138,18 @@ func formatDNSError(msg *dns.Msg, err error) string {
 	return ""
 }
 
-// soaCacheEntry holds a cached SOA record (only selected fields)
-type soaCacheEntry struct {
+type soaEntry struct {
 	zone      string    // zone apex (a domain name)
 	primaryNs string    // primary nameserver for the zone apex
 	expires   time.Time // time when this cache entry should be evicted
 }
 
-func newSoaCacheEntry(soa *dns.SOA) *soaCacheEntry {
-	return &soaCacheEntry{
+func newSoaEntry(soa *dns.SOA) *soaEntry {
+	return &soaEntry{
 		zone:      soa.Hdr.Name,
 		primaryNs: soa.Ns,
 		expires:   time.Now().Add(time.Duration(soa.Refresh) * time.Second),
 	}
-}
-
-// isExpired checks whether a cache entry should be considered expired.
-func (cache *soaCacheEntry) isExpired() bool {
-	return time.Now().After(cache.expires)
 }
 
 // systemOrDefaultNameservers attempts to get system nameservers from the
@@ -232,7 +205,8 @@ func lookupNameservers(fqdn string, resolvers []string) ([]string, error) {
 func recursiveNameservers(custom []string) []string {
 	var servers []string
 	if len(custom) == 0 {
-		servers = systemOrDefaultNameservers(defaultResolvConf, defaultNameservers)
+		//servers = systemOrDefaultNameservers(defaultResolvConf, defaultNameservers)
+		servers = defaultNameservers
 	} else {
 		servers = make([]string, len(custom))
 		copy(servers, custom)
@@ -249,10 +223,5 @@ var defaultNameservers = []string{
 }
 
 var dnsTimeout = 10 * time.Second
-
-var (
-	fqdnSOACache   = map[string]*soaCacheEntry{}
-	fqdnSOACacheMu sync.Mutex
-)
 
 const defaultResolvConf = "/etc/resolv.conf"

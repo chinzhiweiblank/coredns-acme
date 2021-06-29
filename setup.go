@@ -29,7 +29,9 @@ func setup(c *caddy.Controller) error {
 		return plugin.Error(pluginName, err)
 	}
 	config := dnsserver.GetConfig(c)
-	acmeConfig := AcmeConfig{Zone: zone}
+	acmeConfig := AcmeConfig{
+		Zone: zone,
+	}
 	acmeHandler := &AcmeHandler{
 		provider:   &provider,
 		AcmeConfig: &acmeConfig,
@@ -40,12 +42,13 @@ func setup(c *caddy.Controller) error {
 	})
 	c.OnFirstStartup(func() error {
 		go func() error {
-			authoritativeNameserver, err := getAuthoritativeNameServer(zone)
+			authoritativeNameservers, err := getAuthoritativeNameServers(zone)
 			if err != nil {
-				log.Error(err)
 				return err
 			}
-			ipAddr, err := getExternalIpAddress(authoritativeNameserver)
+			authoritativeNameserver := authoritativeNameservers[len(authoritativeNameservers)-1]
+
+			ipAddr, err := getExternalIpAddress(acmeHandler.AuthoritativeNameServer)
 			if err != nil {
 				log.Error(err)
 				return err

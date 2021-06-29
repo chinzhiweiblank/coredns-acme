@@ -6,14 +6,14 @@ import (
 	"github.com/miekg/dns"
 )
 
-func getAuthoritativeNameServer(zone string) (string, error) {
+func getAuthoritativeNameServers(zone string) ([]string, error) {
 	resolvers := recursiveNameservers(nil)
 	nameservers, err := lookupNameservers(zone, resolvers)
 	if err != nil {
-		return "", err
+		return []string{}, err
 	}
-	authoritativeNS := nameservers[len(nameservers)-1]
-	return authoritativeNS, nil
+	fmt.Print(nameservers)
+	return nameservers, nil
 }
 
 func getExternalIpAddress(zone string) (string, error) {
