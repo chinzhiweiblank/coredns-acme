@@ -12,7 +12,6 @@ func getAuthoritativeNameServers(zone string) ([]string, error) {
 	if err != nil {
 		return []string{}, err
 	}
-	fmt.Print(nameservers)
 	return nameservers, nil
 }
 

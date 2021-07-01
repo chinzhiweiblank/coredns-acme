@@ -48,13 +48,14 @@ func setup(c *caddy.Controller) error {
 			}
 			authoritativeNameserver := authoritativeNameservers[len(authoritativeNameservers)-1]
 
-			ipAddr, err := getExternalIpAddress(acmeHandler.AuthoritativeNameServer)
+			ipAddr, err := getExternalIpAddress(authoritativeNameserver)
 			if err != nil {
 				log.Error(err)
 				return err
 			}
-			acmeHandler.IpAddr = net.ParseIP(ipAddr).To4()
-			acmeHandler.AuthoritativeNameServer = authoritativeNameserver
+			acmeHandler.Ipv4Addr = net.ParseIP(ipAddr).To4()
+			acmeHandler.Ipv6Addr = net.ParseIP(ipAddr).To16()
+			acmeHandler.AuthoritativeNameserver = authoritativeNameserver
 
 			acmeTemplate.DNS01Solver = &certmagic.DNS01Solver{
 				DNSProvider: &provider,
