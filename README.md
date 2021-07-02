@@ -64,7 +64,8 @@ This will perform ACME for `example.com` and perform the following challenges:
 3. `DNS01` challenge
 
 ## Installation
-1. Clone CoreDNS and add github.com/chinzhiweiblank/coredns-acme into `go.mod`
+### Prerequisites
+1. Clone [CoreDNS](https://github.com/coredns/coredns) and add github.com/chinzhiweiblank/coredns-acme into `go.mod`
 2. Clone `https://github.com/chinzhiweiblank/coredns-acme`
 3. Add `acme:github.com/chinzhiweiblank/coredns-acme` into `plugin.cfg`
 4. Run `go mod edit -replace github.com/chinzhiweiblank/coredns-acme=${PATH_OF_PLUGIN}`. This enables you to build CoreDNS with the `coredns-acme` repository you cloned.
