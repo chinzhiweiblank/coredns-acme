@@ -31,14 +31,17 @@ In the beginning, the client needs to register an account with a CA and add the 
 
 #### ACME Challenges
 These challenges are for proving to the CA that the client owns the domain.
-1. [HTTP]
-  * Client constructs a key authorization from the token in the challenge and the client's account key. Client then provisions it as a resource on the HTTP server for the domain.
+1. [HTTP](https://datatracker.ietf.org/doc/html/rfc8555#section-8.3)
+  * Client constructs a key authorization from the token in the challenge and the client's account key. 
+  * Client then provisions it as a resource on the HTTP server for the domain.
   * The key authorization will be placed at **http://{domain}/.well-known/acme-challenge/{token}**.
-  * The server will try to retrieve the key authorization from the URL and verify it. 
-2. DNS-01
-
-
+  * Server will try to retrieve the key authorization from the URL and verify its value matches.
+2. [DNS-01](https://datatracker.ietf.org/doc/html/rfc8555#section-8.4)
+ * Client constructs a key authorization from the token in the challenge and the client's account key. It computes the SHA256 digest of it.
+ * Client provisions a TXT record with the digest under **_acme-challenge.{domain}**, the validation domain.
+ * Server will try to retrieve the TXT record under the validation domain name and verify its value matches.
 3. TLS-ALPN
+
 
 ![Domain Issuance](img/DomainVerification.png)
 
@@ -90,14 +93,14 @@ This configuration:
 acme {
   domain example.com
 
-  challenge http01 port 90
+  challenge http port 90
   challenge tlsalpn port 8080
 }
 ~~~
 This will perform ACME for `example.com` and perform the following challenges:
-1. `HTTP01` challenge on port **90**
+1. `HTTP` challenge on port **90**
 2. `TLSALPN` challenge on port **8080**
-3. `DNS01` challenge
+3. `DNS` challenge
 
 ## Installation
 . Clone [CoreDNS](https://github.com/coredns/coredns) and add github.com/chinzhiweiblank/coredns-acme into `go.mod`
@@ -115,3 +118,7 @@ This will perform ACME for `example.com` and perform the following challenges:
 2. [RFC for ACME](https://datatracker.ietf.org/doc/html/rfc8555/)
 3. [Motivation and Use Cases](./plugin.md)
 4. [ACME Protocol](https://www.thesslstore.com/blog/acme-protocol-what-it-is-and-how-it-works/)
+
+## TODO
+1. Add diagram for HTTP, DNS, TLS-ALPN challenges
+2. Pros vs Cons
