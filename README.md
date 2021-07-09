@@ -21,11 +21,14 @@ Certificates allow you to perform SSL/TLS where communication between the client
 When an SSL/TLS certificate is used, the information becomes unreadable to everyone except for the server you are sending the information to. This protects it from hackers and identity thieves.
 
 ### Managing Certificates Manually
+
 To generate a TLS/SSL certificate, you need to do the following:
-1. Generate a Certificate Signing Request (CSR)
+1. Generate a Certificate Signing Request (CSR) with required details
+![Create a CSR](img/CreateCSR.png)
 2. Cut and paste the CSR into a Certificate Authority's (CA) web page
-3. Prove ownership of the domain(s) in the CSR through the CA's challenges
-4. Download the issued certificate and install it on the user's server
+![Submit a CSR](img/SubmitCSR.jpg)
+3. Prove ownership of the domain(s) in the CSR through the CA's challenges.
+4. Download the issued certificate and install it on the server
 
 Managing certificates manually poses a risk to systems in production because:
 1. Users can forget to renew certificate until expiration
@@ -48,12 +51,11 @@ In the beginning, the client needs to register an account with a CA and add the 
 These challenges are for proving to the CA that the client owns the domain.
 1. [HTTP](https://datatracker.ietf.org/doc/html/rfc8555#section-8.3)
   * Client constructs a key authorization from the token in the challenge and the client's account key. 
-  * Client then provisions it as a resource on the HTTP server for the domain.
-  * The key authorization will be placed at **http://{domain}/.well-known/acme-challenge/{token}**.
+  * Client then provisions it as a resource on the HTTP server for the domain and notifies the server. The key authorization will be placed at **http://{domain}/.well-known/acme-challenge/{token}**.
   * Server will try to retrieve the key authorization from the URL and verify its value matches.
 2. [DNS-01](https://datatracker.ietf.org/doc/html/rfc8555#section-8.4)
  * Client constructs a key authorization from the token in the challenge and the client's account key. It computes the SHA256 digest of it.
- * Client provisions a TXT record with the digest under **_acme-challenge.{domain}**, the validation domain.
+ * Client provisions a TXT record with the digest under **_acme-challenge.{domain}**, the validation domain. Client notifies the server.
  * Server will try to retrieve the TXT record under the validation domain name and verify its value matches.
 3. [TLS-ALPN](https://datatracker.ietf.org/doc/html/rfc8737)
 
@@ -129,7 +131,7 @@ This will perform ACME for `example.com` and perform the following challenges:
 3. `DNS` challenge
 
 ## Installation
-. Clone [CoreDNS](https://github.com/coredns/coredns) and add github.com/chinzhiweiblank/coredns-acme into `go.mod`
+1. Clone [CoreDNS](https://github.com/coredns/coredns) and add github.com/chinzhiweiblank/coredns-acme into `go.mod`
 2. Clone `https://github.com/chinzhiweiblank/coredns-acme`
 3. Add `acme:github.com/chinzhiweiblank/coredns-acme` into `plugin.cfg`
 4. Run `go mod edit -replace github.com/chinzhiweiblank/coredns-acme=${PATH_OF_PLUGIN}`. This enables you to build CoreDNS with the `coredns-acme` repository you cloned.
@@ -143,7 +145,3 @@ This will perform ACME for `example.com` and perform the following challenges:
 1. [Challenge Types](https://letsencrypt.org/docs/challenge-types/)
 2. [RFC for ACME](https://datatracker.ietf.org/doc/html/rfc8555/)
 3. [ACME Protocol](https://www.thesslstore.com/blog/acme-protocol-what-it-is-and-how-it-works/)
-
-## TODO
-1. Add diagram for HTTP, DNS, TLS-ALPN challenges
-2. Pros vs Cons
