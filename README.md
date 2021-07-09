@@ -1,7 +1,6 @@
 # acme
 ![CI Workflow](https://github.com/chinzhiweiblank/coredns-acme/actions/workflows/go.yml/badge.svg)
 
-## Name
 ![ACME](img/ACME.png)
 
 *acme* is a [CoreDNS](https://github.com/coredns/coredns) plugin that automates certificate management: issuance and renewal. This enables DNS over TLS, a protocol for DNS resolution.
