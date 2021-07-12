@@ -7,12 +7,16 @@
 
 ## Description
 Manually creating and renewing certificates can result in certificate mismanagement because:
-1. Certificates can expire
+1. ALl certificates will expire
 2. Users need to be reminded to renew certificates
-3. A lot of manpower and time is needed to update hundreds of certificates
+3. Manpower and time is needed to renew certificates manually
+4. The process of creating and renewing certificates [manually](ACME.md#ManagingCertificatesManually) is tedious
 
-The `acme` plugin automatically creates and renews certificates for you, using the `ACME` protocol. This enables more secure communications for DNS servers.
+Managing certificates manually poses a risk to systems in production because:
+1. Users can forget to renew certificate until expiration
+2. Risk of exposure leads to gaps in ownership and hence Man-in-the-Middle attacks and breaches.
 
+The `acme` plugin automatically creates and renews certificates for you, using the [ACME]((https://datatracker.ietf.org/doc/html/rfc8555/)) protocol. This enables more secure communications and certificate management while saving time and manpower which could be put to better use.
 
 ### Why do you need certificates?
 | ![Without SSL](img/HTTP.png) |
@@ -27,30 +31,9 @@ Certificates allow you to encrypted communication between the client and the ser
 
 In Figure 2, When an SSL/TLS certificate is used, the information becomes unreadable to everyone except for the server you are sending the information to. This protects it from hackers and identity thieves.
 
-### Managing Certificates Manually
-
-To generate a TLS/SSL certificate, you need to do the following:
-1. Generate a Certificate Signing Request (CSR) with required details
-
-<img src="img/CreateCSR.png" alt="Creating a CSR" width="50%" height="50%">
-
-
-2. Cut and paste the CSR into a Certificate Authority's (CA) web page
-
-<img src="img/SubmitCSR.jpg" alt="Submitting a CSR" width="50%" height="50%">
-
-3. Prove ownership of the domain(s) in the CSR by manually resolving the CA's challenges.
-4. Download the issued certificate and install it on the server
-
-Managing certificates manually poses a risk to systems in production because:
-1. Users can forget to renew certificate until expiration
-2. Risk of exposure leads to gaps in ownership and hence Man-in-the-Middle attacks and breaches.
 
 ## How ACME works
 See [ACME.md](ACME.md) for the complete explanation.
-
-## What is it?
-`ACME` uses challenges to prove that you own the domain. One challenge is `DNS`, which requires adding DNS records on the authoritative nameserver for your domain. CoreDNS, as a DNS nameserver, can resolve this by creating and providing the necessary records for solving this challenge.
 
 ## Pros and Cons
 ### Pros
@@ -114,6 +97,9 @@ This will perform ACME for `example.com` and perform the following challenges:
 1. `HTTP` challenge on port **90**
 2. `TLSALPN` challenge on port **8080**
 3. `DNS` challenge
+
+## How this plugin works with CoreDNS
+`ACME` uses challenges to prove that you own the domain. One challenge is `DNS`, which requires adding DNS records on the authoritative nameserver for your domain. This plugin uses [CoreDNS](https://github.com/coredns/coredns) to create and providing the necessary records for solving this challenge. It can also resolve the other challenges.
 
 ## Installation
 This is a CoreDNS plugin so you need to set up CoreDNS.
