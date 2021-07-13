@@ -7,7 +7,7 @@
 
 ## Description
 Manually creating and renewing certificates can result in certificate mismanagement because:
-1. ALl certificates will expire
+1. All certificates will expire
 2. Users need to be reminded to renew certificates
 3. Manpower and time is needed to renew certificates manually
 4. The process of creating and renewing certificates [manually](ACME.md#ManagingCertificatesManually) is tedious
@@ -99,7 +99,7 @@ This will perform ACME for `example.com` and perform the following challenges:
 3. `DNS` challenge
 
 ## How this plugin works with CoreDNS
-`ACME` uses challenges to prove that you own the domain. One challenge is `DNS`, which requires adding DNS records on the authoritative nameserver for your domain. This plugin uses [CoreDNS](https://github.com/coredns/coredns) to create and providing the necessary records for solving this challenge. It can also resolve the other challenges.
+`ACME` uses challenges to prove that you own the domain. One challenge is `DNS`, which requires adding DNS records on the authoritative nameserver for your domain. This plugin uses [CoreDNS](https://github.com/coredns/coredns) to create and providing the necessary records for solving this challenge. It can also resolve the other challenges separately.
 
 ## Installation
 This is a CoreDNS plugin so you need to set up CoreDNS.
