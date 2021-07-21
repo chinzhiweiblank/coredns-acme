@@ -3,48 +3,57 @@
 
 ![ACME](img/ACME.png)
 
-*acme* is a plugin that automates certificate management: issuance and renewal.
+*acme* is a plugin that automates certificate management through the `ACME` protocol because managing certificates manually exposes you to security risks, manpower and time wastage. Users can forget to renew the certificates or take a lot of effort and time to do it manually.
 
-## Description
-Certificate mismangement can occur when you manage your certificates manually because:
+
+# Table of Contents
+1. [What is ACME?](#what-is-ACME-and-why-do-you-need-it?)
+2. [Why is ACME important?](#example2)
+3. [ACME step-by-step](#third-example)
+4. [Pros vs Cons]()
+5. [Configuration]()
+6. [Examples]()
+7. [Installation]()
+8. [Disclaimer]()
+
+## What is ACME and why do you need it?
+Without Certificate            |  With Certificate
+:-------------------------:|:-------------------------:
+<img src="img/HTTP.png" width="100%" /> | <img src="img/HTTPS.png" width="100%" /> 
+
+(SSL/TLS) certificates are used to encrypt information between the client and the server. Information becomes unreadable to everyone except for you and the server you are sending the information to. This protects it from hackers and identity thieves.
+
+Certificate management is the act of issuing, renewing and revoking certificates. There are two ways to do it: Manually by yourself or Automatically using the [ACME]((https://datatracker.ietf.org/doc/html/rfc8555/)) protocol. ACME automatically creates and renews certificates for you. This enables more secure communications and certificate management while saving time and manpower.
+
+## Why is ACME important?
+To understand the importance of ACME, you need to know how manual certificate Management works and its risks.
+
+### Manual Certificate Management
+To generate a certificate, you need to do the following:
+
+1. Generate a Certificate Signing Request (CSR) manually
+<img src="img/CreateCSR.png" alt="Creating a CSR" width="50%" height="50%">
+2. Cut and paste the CSR into a Certificate Authority's (CA) page
+<img src="img/SubmitCSR.jpg" alt="Submitting a CSR" width="50%" height="50%">
+3. Prove ownership of the domain(s) in the CSR by manually resolving the CA's challenges.
+4. Download the issued certificate and install it on the server
+<img src="img/PasteSSLCert.png" alt="Installing SSL Cert" width="50%" height="50%">
+
+### Certificate Mismanagement
+Certificate mismanagement can occur when you manage your certificates manually because:
 * All certificates will expire
 * Users need to be reminded to renew certificates
 * Manpower and time is needed to renew certificates manually
-* The process of creating and renewing certificates manually is tedious
+* The process is tedious and cumbersome
 
 Managing certificates manually poses a risk to systems in production because:
 * Users can forget to renew certificate until expiration
+<img src="img/ExpiredCertificate.png" alt="Expired Certificate" width="50%" height="50%">
 * Risk of exposure leads to gaps in ownership and hence Man-in-the-Middle attacks and breaches.
+<img src="img/mitm.png" alt="Man in the Middle Attacks" width="50%" height="50%">
 
-The `acme` plugin automatically creates and renews certificates for you, using the [ACME]((https://datatracker.ietf.org/doc/html/rfc8555/)) protocol. This enables more secure communications and certificate management while saving time and manpower which could be put to better use.
-
-### Managing Certificates Manually
-
-To generate a TLS/SSL certificate, you need to do the following:
-1. Generate a Certificate Signing Request (CSR) with required details
-
-<img src="img/CreateCSR.png" alt="Creating a CSR" width="50%" height="50%">
-
-
-2. Cut and paste the CSR into a Certificate Authority's (CA) web page
-
-<img src="img/SubmitCSR.jpg" alt="Submitting a CSR" width="50%" height="50%">
-
-3. Prove ownership of the domain(s) in the CSR by manually resolving the CA's challenges.
-4. Download the issued certificate and install it on the server
-
-### Why do you need certificates?
-| ![Without SSL](img/HTTP.png) |
-|:--:|
-| Figure 1: Communication without TLS certificate|
-
-Certificates allow you to encrypted communication between the client and the server so that only the intended recipient can access it. Information you send on the Internet is passed from computer to computer to get to the destination server. In Figure 1, your sensitive information like passwords is not encrypted and can be exposed to any server between you and the recipient.
-
-|![With SSL](img/HTTPS.png)|
-|:--:|
-|Figure 2: Secure communication with TLS certificate|
-
-In Figure 2, When an SSL/TLS certificate is used, the information becomes unreadable to everyone except for the server you are sending the information to. This protects it from hackers and identity thieves.
+### How can ACME help?
+ACME automates the entire process. It enables secure certificate management and prevents these risks from happening. In a production environment, you could have hundreds of certificates to keep watch everyday and renew or revoke for many different domains. This saves a lot of manpower and time for managing these certificates manually.
 
 ## How does ACME work?
 In the beginning, the client needs to register an account with a CA and add the domain under it. Then it needs to prove that it owns the domain through domain validation.
@@ -86,7 +95,6 @@ information.
 ### Certificate Revocation
 Likewise, for revocation, a revocation request is generated and signed with the **authorised** private key. It is then sent to the CA to revoke the certificate.
 
-
 ## Pros and Cons
 ### Pros
 ACME enables automatic renewal, replacement and revocation of domain validated TLS/SSL certificates.
@@ -96,7 +104,8 @@ ACME enables automatic renewal, replacement and revocation of domain validated T
 * You no longer have to worry about data breaches or Man-in-the-Middle attacks that happen when your certificates expire
 * Certificates from LetsEncrypt are free!
 
-Just set up ACME once and let it run. At companies, this could save  a lot of manpower and time when there are hundreds of certificates in use.
+Just set up ACME once and let it run.
+
 ### Cons
 * LetsEncrypt does not offer OV (Organisation Validation) or EV (Extended Validation) certificates as stated in their [FAQ](https://letsencrypt.org/docs/faq/#will-let-s-encrypt-issue-organization-validation-ov-or-extended-validation-ev-certificates).
 
