@@ -29,9 +29,12 @@ To generate a certificate, you need to do the following:
 
 1. Generate a Certificate Signing Request (CSR) manually
 <img src="img/CreateCSR.png" alt="Creating a CSR" width="50%" height="50%">
+
 2. Cut and paste the CSR into a Certificate Authority's (CA) page
 <img src="img/SubmitCSR.jpg" alt="Submitting a CSR" width="50%" height="50%">
-3. Prove ownership of the domain(s) in the CSR by manually resolving the CA's challenges.
+
+3. Prove ownership of the domain(s) in the CSR by manually resolving the CA's challenges
+
 4. Download the issued certificate and install it on the server.
 <img src="img/PasteSSLCert.png" alt="Installing SSL Cert" width="50%" height="50%">
 
