@@ -5,7 +5,6 @@
 
 *acme* is a plugin that automates certificate management through the `ACME` protocol because managing certificates manually exposes you to security risks, manpower and time wastage. Users can forget to renew the certificates or take a lot of effort and time to do it manually.
 
-
 # Table of Contents
 1. [What is ACME and why do you need it?](#what-is-acme-and-why-do-you-need-it)
 2. [Why is ACME important?](#why-is-acme-important)
@@ -14,16 +13,16 @@
 5. [Getting Started](#getting-started)
 
 ## What is ACME and why do you need it?
-Without Certificate            |  With Certificate
+Without Certificate        |  With Certificate
 :-------------------------:|:-------------------------:
-<img src="img/HTTP.png" width="100%" /> | <img src="img/HTTPS.png" width="100%" /> 
+<img src="img/HTTP.png" width="100%" height="50%"/> | <img src="img/HTTPS.png" width="100%" height="50%" /> 
 
 (SSL/TLS) certificates are used to encrypt information between the client and the server. Information becomes unreadable to everyone except for you and the server you are sending the information to. This protects it from hackers and identity thieves.
 
 Certificate management is the act of issuing, renewing and revoking certificates. There are two ways to do it: Manually by yourself or Automatically using the [ACME]((https://datatracker.ietf.org/doc/html/rfc8555/)) protocol. ACME automatically creates and renews certificates for you. This enables more secure communications and certificate management while saving time and manpower.
 
 ## Why is ACME important?
-To understand the importance of ACME, you need to know how manual certificate Management works and its risks.
+To understand the importance of ACME, you need to know how manual certificate management works and its risks.
 
 ### Manual Certificate Management
 To generate a certificate, you need to do the following:
@@ -33,7 +32,7 @@ To generate a certificate, you need to do the following:
 2. Cut and paste the CSR into a Certificate Authority's (CA) page
 <img src="img/SubmitCSR.jpg" alt="Submitting a CSR" width="50%" height="50%">
 3. Prove ownership of the domain(s) in the CSR by manually resolving the CA's challenges.
-4. Download the issued certificate and install it on the server
+4. Download the issued certificate and install it on the server.
 <img src="img/PasteSSLCert.png" alt="Installing SSL Cert" width="50%" height="50%">
 
 ### Certificate Mismanagement
@@ -46,7 +45,7 @@ Certificate mismanagement can occur when you manage your certificates manually b
 Managing certificates manually poses a risk to systems in production because:
 * Users can forget to renew certificate until expiration
 <img src="img/ExpiredCertificate.png" alt="Expired Certificate" width="50%" height="50%">
-* Risk of exposure leads to gaps in ownership and hence Man-in-the-Middle attacks and breaches.
+* Risk of exposure leads to gaps in ownership and hence Man-in-the-Middle attacks and data breaches.
 <img src="img/mitm.png" alt="Man in the Middle Attacks" width="50%" height="50%">
 
 ### How can ACME help?
