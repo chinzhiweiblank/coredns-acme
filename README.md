@@ -19,7 +19,7 @@ Without Certificate        |  With Certificate
 
 (SSL/TLS) certificates are used to encrypt information between the client and the server. Information becomes unreadable to everyone except for you and the server you are sending the information to. This protects it from hackers and identity thieves.
 
-Certificate management is the act of issuing, renewing and revoking certificates. There are two ways to do it: Manually by yourself or Automatically using the [ACME]((https://datatracker.ietf.org/doc/html/rfc8555/)) protocol. ACME automatically creates and renews certificates for you. This enables more secure communications and certificate management while saving time and manpower.
+Certificate management is the act of issuing, renewing and revoking certificates. There are two ways to do it: 1) Manually by yourself or 2) Automatically using the [ACME]((https://datatracker.ietf.org/doc/html/rfc8555/)) protocol. ACME automates the creation and renewal of your certificates. This enables more secure communications and certificate management while saving time and manpower.
 
 ## Why is ACME important?
 To understand the importance of ACME, you need to know how manual certificate management works and its risks.
