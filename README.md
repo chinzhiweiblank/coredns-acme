@@ -9,12 +9,9 @@
 # Table of Contents
 1. [What is ACME and why do you need it?](#what-is-acme-and-why-do-you-need-it)
 2. [Why is ACME important?](#why-is-acme-important)
-3. [How does ACME work](#how-does-acme-work)
-4. [Pros vs Cons](#pros-and-cons)
-5. [Configuration](#configuration)
-6. [Examples](#examples)
-7. [Installation](#installation)
-8. [Disclaimer](#disclaimer)
+3. [How does ACME work?](#how-does-acme-work)
+4. [Pros and Cons](#pros-and-cons)
+5. [Getting Started](#getting-started)
 
 ## What is ACME and why do you need it?
 Without Certificate            |  With Certificate
@@ -109,8 +106,9 @@ Just set up ACME once and let it run.
 ### Cons
 * LetsEncrypt does not offer OV (Organisation Validation) or EV (Extended Validation) certificates as stated in their [FAQ](https://letsencrypt.org/docs/faq/#will-let-s-encrypt-issue-organization-validation-ov-or-extended-validation-ev-certificates).
 
-## Configuration
-## Basic
+## Getting Started
+### Configuration
+#### Basic
 ~~~txt
 acme {
   domain <DOMAIN>
@@ -121,7 +119,7 @@ acme {
 * Under this configuration, only the **DNS** challenge will be used for ACME.
 
 
-## Advanced
+##### Advanced
 ~~~txt
 acme {
   domain DOMAIN
@@ -135,8 +133,8 @@ You can specify one or more challenges the CA can use to verify your ownership o
 * `PORT` is the port number to use for each challenge. Make sure the ports are open and accessible.
 
 
-## Examples
-### Basic
+### Examples
+#### Basic
 ~~~txt
 acme {
   domain contoso.com
@@ -144,8 +142,7 @@ acme {
 ~~~
 This will perform ACME for `contoso.com` and use the `DNS01` challenge only.
 
-### Advanced
-This configuration:
+#### Advanced
 ~~~txt
 acme {
   domain example.com
@@ -159,20 +156,21 @@ This will perform ACME for `example.com` and perform the following challenges:
 2. `TLSALPN` challenge on port **8080**
 3. `DNS` challenge
 
-## How this plugin works with CoreDNS
+### How this plugin works with CoreDNS
 `ACME` uses challenges to prove that you own the domain. One challenge is `DNS`, which requires adding DNS records on the authoritative nameserver for your domain. This plugin uses [CoreDNS](https://github.com/coredns/coredns) to create and providing the necessary records for solving this challenge. It can also resolve the other challenges separately.
 
-## Installation
+### Installation
 This is a CoreDNS plugin so you need to set up CoreDNS.
 1. Clone [CoreDNS](https://github.com/coredns/coredns) and add github.com/chinzhiweiblank/coredns-acme into `go.mod`
 2. Clone `https://github.com/chinzhiweiblank/coredns-acme`
 3. Add `acme:github.com/chinzhiweiblank/coredns-acme` into `plugin.cfg`
 4. Run `go mod edit -replace github.com/chinzhiweiblank/coredns-acme=${PATH_OF_PLUGIN}`. This enables you to build CoreDNS with the `coredns-acme` repository you cloned.
+5. Configure the plugin in the `Corefile`
 
-## Disclaimer
-* Make sure you have the following conditions: 
-  * You own the domain
-  * Your CoreDNS server is the authoritative nameserver for the domain
+### Disclaimer
+Make sure you have the following conditions: 
+* You own the domain
+* Your CoreDNS server is the authoritative nameserver for the domain
 
 ## See Also
 1. [Challenge Types](https://letsencrypt.org/docs/challenge-types/)
