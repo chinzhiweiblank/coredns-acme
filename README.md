@@ -9,7 +9,7 @@
 # Table of Contents
 1. [What is ACME?](#what-is-acme-and-why-do-you-need-it?)
 2. [Why is ACME important?](#why-is-acme-important?)
-3. [How does ACME work](#how-does-acme-work)
+3. [How does ACME work](#how-does-acme-work?)
 4. [Pros vs Cons](#pros-and-cons)
 5. [Configuration](#configuration)
 6. [Examples](#examples)
