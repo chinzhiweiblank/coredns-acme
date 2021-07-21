@@ -48,6 +48,7 @@ Certificate mismanagement can occur when you manage your certificates manually b
 Managing certificates manually poses a risk to systems in production because:
 * Users can forget to renew certificate until expiration
 <img src="img/ExpiredCertificate.png" alt="Expired Certificate" width="50%" height="50%">
+
 * Risk of exposure leads to gaps in ownership and hence Man-in-the-Middle attacks and data breaches.
 <img src="img/mitm.png" alt="Man in the Middle Attacks" width="50%" height="50%">
 
