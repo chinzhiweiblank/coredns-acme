@@ -3,7 +3,9 @@
 
 ![ACME](img/ACME.png)
 
-*acme* is a plugin that automates certificate management through the `ACME` protocol because managing certificates manually exposes you to security risks, manpower and time wastage. Users can forget to renew the certificates or take a lot of effort and time to do it manually.
+If you have ever setup SSL certificates from [Let's Encrypt](https://letsencrypt.org) for your site, you would know it is important to renew certificates or else visitors will get greeted with errors about your expired certificate. Let's Encrypt SSL certificates will get expired within 90 days of installation. You must renew it before it gets expired.
+
+This plugin is a solution that automates certificate management through the `ACME` protocol, because managing certificates manually exposes you to security risks, manpower and time wastage. Users can forget to renew the certificates or take a lot of effort and time to do it manually.
 
 # Table of Contents
 1. [What is ACME and why do you need it?](#what-is-acme-and-why-do-you-need-it)
@@ -164,11 +166,23 @@ This will perform ACME for `example.com` and perform the following challenges:
 
 ### Installation
 This is a CoreDNS plugin so you need to set up CoreDNS.
-1. Clone [CoreDNS](https://github.com/coredns/coredns) and add github.com/chinzhiweiblank/coredns-acme into `go.mod`
-2. Clone `https://github.com/chinzhiweiblank/coredns-acme`
-3. Add `acme:github.com/chinzhiweiblank/coredns-acme` into `plugin.cfg`
-4. Run `go mod edit -replace github.com/chinzhiweiblank/coredns-acme=${PATH_OF_PLUGIN}`. This enables you to build CoreDNS with the `coredns-acme` repository you cloned.
-5. Configure the plugin in the `Corefile`
+```bash
+# 1. Clone CoreDNS
+git clone https://github.com/coredns/coredns
+
+# 2. Add github.com/chinzhiweiblank/coredns-acme into go.mod
+go mod require github.com/chinzhiweiblank/coredns-acme
+
+# 3. Clone this plugin
+git clone https://github.com/chinzhiweiblank/coredns-acme
+
+# 4. "Add acme:github.com/chinzhiweiblank/coredns-acme" into `plugin.cfg`
+cd coredns
+echo "acme:github.com/chinzhiweiblank/coredns-acme" >> plugin.cfg
+
+# Add the path of the plugin in the go modules
+go mod edit -replace github.com/chinzhiweiblank/coredns-acme=../coredns-acme
+```
 
 ### Disclaimer
 Make sure you have the following conditions: 
