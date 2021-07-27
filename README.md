@@ -3,42 +3,65 @@
 
 ![ACME](img/ACME.png)
 
-*acme* is a [CoreDNS](https://github.com/coredns/coredns) plugin that automates certificate management: issuance and renewal. This enables DNS over TLS, a protocol for DNS resolution.
+If you have ever setup SSL certificates from [Let's Encrypt](https://letsencrypt.org) for your site, you would know it is important to renew certificates or else visitors will get greeted with errors about your expired certificate. Let's Encrypt SSL certificates will get expired within 90 days of installation. You must renew it before it gets expired.
 
-The default certificate authority (CA) used is LetsEncrypt.
+This plugin is a solution that automates certificate management through the `ACME` protocol, because managing certificates manually exposes you to security risks, manpower and time wastage. Users can forget to renew the certificates or take a lot of effort and time to do it manually.
 
-## Description
-DNS over TLS is currently done through the CoreDNS `tls` plugin. You have to manually create and provide a certificate and key. You also have to do it when the certificate expires.
+# Table of Contents
+1. [What is ACME and why do you need it?](#what-is-acme-and-why-do-you-need-it)
+2. [Why is ACME important?](#why-is-acme-important)
+3. [How does ACME work?](#how-does-acme-work)
+4. [Pros and Cons](#pros-and-cons)
+5. [Getting Started](#getting-started)
 
-However, the `acme` plugin automatically creates and renews the certificate for you, using the `ACME` protocol.
+## What is ACME and why do you need it?
+Without Certificate        |  With Certificate
+:-------------------------:|:-------------------------:
+<img src="img/HTTP.png" width="100%" height="50%"/> | <img src="img/HTTPS.png" width="100%" height="50%" /> 
 
-`ACME` uses challenges to prove that you own the domain. One challenge is `DNS01`, which requires adding DNS records on the authoritative nameserver for your domain. CoreDNS, as a nameserver, can resolve this by creating and providing the necessary records for solving this challenge.
+(SSL/TLS) certificates are used to encrypt information between the client and the server. Information becomes unreadable to everyone except for you and the server you are sending the information to. This protects it from hackers and identity thieves.
 
-### Why do you need certificates?
-Certificates allow you to perform SSL/TLS where communication between the client and the server is encrypted so that only the intended recipient can access it. Information you send on the Internet is passed from computer to computer to get to the destination server. Any computer in between you and the server can see your sensitive information if it's not encrypted.
+Certificate management is the act of issuing, renewing and revoking certificates. There are two ways to do it: 1) Manually by yourself or 2) Automatically using the [ACME]((https://datatracker.ietf.org/doc/html/rfc8555/)) protocol. ACME automates the creation and renewal of your certificates. This enables more secure communications and certificate management while saving time and manpower.
 
-When an SSL/TLS certificate is used, the information becomes unreadable to everyone except for the server you are sending the information to. This protects it from hackers and identity thieves.
+## Why is ACME important?
+To understand the importance of ACME, you need to know how manual certificate management works and its risks.
 
-### Managing Certificates Manually
+### Manual Certificate Management
+To generate a certificate, you need to do the following:
 
-To generate a TLS/SSL certificate, you need to do the following:
-1. Generate a Certificate Signing Request (CSR) with required details
-![Create a CSR](img/CreateCSR.png)
-2. Cut and paste the CSR into a Certificate Authority's (CA) web page
-![Submit a CSR](img/SubmitCSR.jpg)
-3. Prove ownership of the domain(s) in the CSR through the CA's challenges.
-4. Download the issued certificate and install it on the server
+1. Generate a Certificate Signing Request (CSR) manually
+<img src="img/CreateCSR.png" alt="Creating a CSR" width="50%" height="50%">
+
+2. Cut and paste the CSR into a Certificate Authority's (CA) page
+<img src="img/SubmitCSR.jpg" alt="Submitting a CSR" width="50%" height="50%">
+
+3. Prove ownership of the domain(s) in the CSR by manually resolving the CA's challenges
+
+4. Download the issued certificate and install it on the server.
+<img src="img/PasteSSLCert.png" alt="Installing SSL Cert" width="50%" height="50%">
+
+### Certificate Mismanagement
+Certificate mismanagement can occur when you manage your certificates manually because:
+* All certificates will expire
+* Users need to be reminded to renew certificates
+* Manpower and time is needed to renew certificates manually
+* The process is tedious and cumbersome
 
 Managing certificates manually poses a risk to systems in production because:
-1. Users can forget to renew certificate until expiration
-2. Risk of exposure leads to gaps in ownership and hence Man-in-the-Middle attacks and breaches.
+* Users can forget to renew certificate until expiration
+<img src="img/ExpiredCertificate.png" alt="Expired Certificate" width="50%" height="50%">
 
-## How ACME works
+* Risk of exposure leads to gaps in ownership and hence Man-in-the-Middle attacks and data breaches.
+<img src="img/mitm.png" alt="Man in the Middle Attacks" width="50%" height="50%">
+
+### How can ACME help?
+ACME automates the entire process. It enables secure certificate management and prevents these risks from happening. In a production environment, you could have hundreds of certificates to keep watch everyday and renew or revoke for many different domains. This saves a lot of manpower and time for managing these certificates manually.
+
+## How does ACME work?
 In the beginning, the client needs to register an account with a CA and add the domain under it. Then it needs to prove that it owns the domain through domain validation.
 
 ### Domain Validation
 ![Domain Validation](img/DomainValidation.png)
-#### Steps:
 1. Client first generates a public and private key. Client keeps the private key.
 2. The CA issues one or more challenges (DNS/HTTPS/TLS-ALPN) to prove that the client controls the domain.
 3. CA also sends a nonce to sign with the private key. This proves that the client controls the public and private keys.
@@ -46,25 +69,32 @@ In the beginning, the client needs to register an account with a CA and add the 
 5. LetsEncrypt verifies the nonce and checks whether the challenge is fulfilled.
 6. Server is authorised to do certificate management for the domain with the key-value pair. The key-value pair is now known as the **authorised** key-value pair.
 
-#### ACME Challenges
-These challenges are for proving to the CA that the client owns the domain.
+### ACME Challenges
+These challenges are for proving to the CA that the client owns the domain. In this case, we refer to the client as the one requesting for the certificate and the server as the Certificate Authority.
 1. [HTTP](https://datatracker.ietf.org/doc/html/rfc8555#section-8.3)
-  * Client constructs a key authorization from the token in the challenge and the client's account key. 
-  * Client then provisions it as a resource on the HTTP server for the domain and notifies the server. The key authorization will be placed at **http://{domain}/.well-known/acme-challenge/{token}**.
-  * Server will try to retrieve the key authorization from the URL and verify its value matches.
-2. [DNS-01](https://datatracker.ietf.org/doc/html/rfc8555#section-8.4)
- * Client constructs a key authorization from the token in the challenge and the client's account key. It computes the SHA256 digest of it.
- * Client provisions a TXT record with the digest under **_acme-challenge.{domain}**, the validation domain. Client notifies the server.
- * Server will try to retrieve the TXT record under the validation domain name and verify its value matches.
+* Client constructs a key authorization from the token in the challenge and the client's account key. 
+* Client then provisions it as a resource on the HTTP server for the domain and notifies the server. The key authorization will be placed at **http://{domain}/.well-known/acme-challenge/{token}**.
+* Server will try to retrieve the key authorization from the URL and verify its value matches.
+2. [DNS](https://datatracker.ietf.org/doc/html/rfc8555#section-8.4)
+* Client constructs a key authorization from the token in the challenge and the client's account key. It computes the SHA256 digest of it.
+* Client provisions a TXT record with the digest under **_acme-challenge.{domain}**, the validation domain. Client notifies the server.
+* Server will try to retrieve the TXT record under the validation domain name and verify its value matches.
 3. [TLS-ALPN](https://datatracker.ietf.org/doc/html/rfc8737)
+* Known as TLS with Application-Layer Protocol Negotiation (TLS ALPN). It allows clients to negotiate what protocol to use for communication (at the application level).
+* Client configures a TLS server to respond to specific
+connection attempts using the ALPN extension with identifying
+information.
+* Client builds a self-signed certificate with the required extensions. The acmeIdentifier extension must contain the SHA256 digest of the key authorization from the token in the challenge. The subjectAlternativeName extension must contain the domain name being validated.
+* Server connects to a TLS server at one of the addresses resolved for the domain name and verifies that a certificate with the specified content is presented. It must use port **443**.
 
-#### Certificate Issuance
+### Certificate Issuance
 ![Certificate Issuance](img/DomainVerification.png)
 * Server generates a Certificate Signing Request and a public key. It asks the CA to issue a certificate with this public key.
 * Server signs the public key in the CSR and the CSR with the **authorised** private key.
 * CA verifies both signatures and issues the certificate.
 * Server receives the certificate and installs it on the relevant domain.
 
+### Certificate Revocation
 Likewise, for revocation, a revocation request is generated and signed with the **authorised** private key. It is then sent to the CA to revoke the certificate.
 
 ## Pros and Cons
@@ -74,13 +104,16 @@ ACME enables automatic renewal, replacement and revocation of domain validated T
 * You no longer have to spend energy and time to keep a watch on their expiry dates and worry about certificates expiring.
 * You no longer have to dig out the instructions to renew and configure the certificates.
 * You no longer have to worry about data breaches or Man-in-the-Middle attacks that happen when your certificates expire
+* Certificates from LetsEncrypt are free!
 
-Just set up ACME once and let it run. At companies, this could save  a lot of manpower and time when there are hundreds of certificates in use.
+Just set up ACME once and let it run.
+
 ### Cons
 * LetsEncrypt does not offer OV (Organisation Validation) or EV (Extended Validation) certificates as stated in their [FAQ](https://letsencrypt.org/docs/faq/#will-let-s-encrypt-issue-organization-validation-ov-or-extended-validation-ev-certificates).
 
-## Configuration
-## Basic
+## Getting Started
+### Configuration
+#### Basic
 ~~~txt
 acme {
   domain <DOMAIN>
@@ -88,10 +121,10 @@ acme {
 ~~~
 
 * `DOMAIN` is the domain name the plugin should be authoritative for.
-* Under this configuration, only the **DNS01** challenge will be used for ACME.
+* Under this configuration, only the **DNS** challenge will be used for ACME.
 
 
-## Advanced
+##### Advanced
 ~~~txt
 acme {
   domain DOMAIN
@@ -105,8 +138,8 @@ You can specify one or more challenges the CA can use to verify your ownership o
 * `PORT` is the port number to use for each challenge. Make sure the ports are open and accessible.
 
 
-## Examples
-### Basic
+### Examples
+#### Basic
 ~~~txt
 acme {
   domain contoso.com
@@ -114,8 +147,7 @@ acme {
 ~~~
 This will perform ACME for `contoso.com` and use the `DNS01` challenge only.
 
-### Advanced
-This configuration:
+#### Advanced
 ~~~txt
 acme {
   domain example.com
@@ -129,16 +161,37 @@ This will perform ACME for `example.com` and perform the following challenges:
 2. `TLSALPN` challenge on port **8080**
 3. `DNS` challenge
 
-## Installation
-1. Clone [CoreDNS](https://github.com/coredns/coredns) and add github.com/chinzhiweiblank/coredns-acme into `go.mod`
-2. Clone `https://github.com/chinzhiweiblank/coredns-acme`
-3. Add `acme:github.com/chinzhiweiblank/coredns-acme` into `plugin.cfg`
-4. Run `go mod edit -replace github.com/chinzhiweiblank/coredns-acme=${PATH_OF_PLUGIN}`. This enables you to build CoreDNS with the `coredns-acme` repository you cloned.
+### How this plugin works with CoreDNS
+`ACME` uses challenges to prove that you own the domain. One challenge is `DNS`, which requires adding DNS records on the authoritative nameserver for your domain. This plugin uses [CoreDNS](https://github.com/coredns/coredns) to create and providing the necessary records for solving this challenge. It can also resolve the other challenges separately.
 
-## Disclaimer
-* Make sure you have the following conditions: 
-  * You own the domain
-  * Your CoreDNS server is the authoritative nameserver for the domain
+### Installation
+This is a CoreDNS plugin so you need to set up CoreDNS first.
+```bash
+# Clone CoreDNS
+git clone https://github.com/coredns/coredns
+
+# Clone this plugin
+git clone https://github.com/chinzhiweiblank/coredns-acme
+
+# Add github.com/chinzhiweiblank/coredns-acme into go.mod
+cd coredns
+go mod require github.com/chinzhiweiblank/coredns-acme
+
+# Add acme:github.com/chinzhiweiblank/coredns-acme into the plugin configuration
+echo "acme:github.com/chinzhiweiblank/coredns-acme" >> plugin.cfg
+
+# Add the path of the plugin in the go modules
+go mod edit -replace github.com/chinzhiweiblank/coredns-acme=../coredns-acme
+
+# Get the modules and compile
+go get -u
+go build
+```
+
+### Disclaimer
+Make sure you have the following conditions: 
+* You own the domain
+* Your CoreDNS server is the authoritative nameserver for the domain
 
 ## See Also
 1. [Challenge Types](https://letsencrypt.org/docs/challenge-types/)
