@@ -165,23 +165,27 @@ This will perform ACME for `example.com` and perform the following challenges:
 `ACME` uses challenges to prove that you own the domain. One challenge is `DNS`, which requires adding DNS records on the authoritative nameserver for your domain. This plugin uses [CoreDNS](https://github.com/coredns/coredns) to create and providing the necessary records for solving this challenge. It can also resolve the other challenges separately.
 
 ### Installation
-This is a CoreDNS plugin so you need to set up CoreDNS.
+This is a CoreDNS plugin so you need to set up CoreDNS first.
 ```bash
-# 1. Clone CoreDNS
+# Clone CoreDNS
 git clone https://github.com/coredns/coredns
 
-# 2. Add github.com/chinzhiweiblank/coredns-acme into go.mod
-go mod require github.com/chinzhiweiblank/coredns-acme
-
-# 3. Clone this plugin
+# Clone this plugin
 git clone https://github.com/chinzhiweiblank/coredns-acme
 
-# 4. "Add acme:github.com/chinzhiweiblank/coredns-acme" into `plugin.cfg`
+# Add github.com/chinzhiweiblank/coredns-acme into go.mod
 cd coredns
+go mod require github.com/chinzhiweiblank/coredns-acme
+
+# Add acme:github.com/chinzhiweiblank/coredns-acme into the plugin configuration
 echo "acme:github.com/chinzhiweiblank/coredns-acme" >> plugin.cfg
 
 # Add the path of the plugin in the go modules
 go mod edit -replace github.com/chinzhiweiblank/coredns-acme=../coredns-acme
+
+# Get the modules and compile
+go get -u
+go build
 ```
 
 ### Disclaimer
