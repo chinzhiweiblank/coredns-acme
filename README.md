@@ -175,7 +175,7 @@ git clone https://github.com/chinzhiweiblank/coredns-acme
 
 # Add github.com/chinzhiweiblank/coredns-acme into go.mod
 cd coredns
-go mod require github.com/chinzhiweiblank/coredns-acme
+go mod edit -require=github.com/chinzhiweiblank/coredns-acme@v1.0.0
 
 # Add acme:github.com/chinzhiweiblank/coredns-acme into the plugin configuration
 echo "acme:github.com/chinzhiweiblank/coredns-acme" >> plugin.cfg
