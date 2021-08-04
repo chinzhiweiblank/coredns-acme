@@ -1,0 +1,27 @@
+name: Go
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.16
+    - name: Build Binary with CoreDNS
+      run: |
+        git clone https://github.com/coredns/coredns
+        cd coredns
+        go mod edit -require=github.com/chinzhiweiblank/coredns-acme
+        echo 'acme:github.com/chinzhiweiblank/coredns-acme' >> plugin.cfg
+        go get -u && go build
+      
