@@ -28,7 +28,8 @@ jobs:
       run: |
         git clone https://github.com/coredns/coredns
         cd coredns
-        go mod edit -require=github.com/chinzhiweiblank/coredns-acme@$GITHUB_HEAD_REF
+        go get -u github.com/chinzhiweiblank/coredns-acme@GITHUB_HEAD_REF
+        go mod edit -require=github.com/chinzhiweiblank/coredns-acme
         echo 'acme:github.com/chinzhiweiblank/coredns-acme' >> plugin.cfg
         go get -u && go build
       
