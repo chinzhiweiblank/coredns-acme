@@ -3,6 +3,7 @@
 
 ![ACME](img/ACME.png)
 
+If you already know how SSL and ACME works, you can go straight to the [installation and configuration](#getting-started).
 If you have ever setup SSL certificates from [Let's Encrypt](https://letsencrypt.org) for your site, you would know it is important to renew certificates or else visitors will get greeted with errors about your expired certificate. Let's Encrypt SSL certificates will get expired within 90 days of installation. You must renew it before it gets expired.
 
 This plugin is a solution that automates certificate management through the `ACME` protocol, because managing certificates manually exposes you to security risks, manpower and time wastage. Users can forget to renew the certificates or take a lot of effort and time to do it manually.
@@ -166,12 +167,11 @@ This will perform ACME for `example.com` and perform the following challenges:
 
 ### Installation
 This is a CoreDNS plugin so you need to set up CoreDNS first.
+#### Basic
+If you have Golang installed, you can execute the script below to build the binary.
 ```bash
 # Clone CoreDNS
 git clone https://github.com/coredns/coredns
-
-# Clone this plugin
-git clone https://github.com/chinzhiweiblank/coredns-acme
 
 # Add github.com/chinzhiweiblank/coredns-acme into go.mod
 cd coredns
@@ -180,12 +180,21 @@ go mod edit -require=github.com/chinzhiweiblank/coredns-acme@v1.0.0
 # Add acme:github.com/chinzhiweiblank/coredns-acme into the plugin configuration
 echo "acme:github.com/chinzhiweiblank/coredns-acme" >> plugin.cfg
 
-# Add the path of the plugin in the go modules
-go mod edit -replace github.com/chinzhiweiblank/coredns-acme=../coredns-acme
-
 # Get the modules and compile
 go get -u
 go build
+```
+#### Docker
+The recommended way is to use a Docker container to build the binary and output it.
+```
+docker run --rm -v "$PWD":/usr/src -w /usr/src golang:1.16 \
+"""
+git clone https://github.com/coredns/coredns;
+cd coredns;
+go mod edit -require=github.com/chinzhiweiblank/coredns-acme@v1.0.0;
+echo "acme:github.com/chinzhiweiblank/coredns-acme" >> plugin.cfg;
+go get -u && go build;
+"""
 ```
 
 ### Disclaimer
