@@ -150,6 +150,6 @@ func parseACME(c *caddy.Controller) (certmagic.ACMEManager, string, error) {
 			}
 		}
 	}
-	acmeTemplate.CA = certmagic.LetsEncryptStagingCA
+	acmeTemplate.CA = certmagic.LetsEncryptProductionCA
 	return acmeTemplate, zone, nil
 }

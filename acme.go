@@ -60,7 +60,7 @@ func (a ACME) IssueCert(zones []string) error {
 }
 
 func (a ACME) GetCert(zone string) error {
-	err := a.Config.ObtainCert(context.Background(), zone, false)
+	err := a.Config.ObtainCertSync(context.Background(), zone)
 	return err
 }
 
