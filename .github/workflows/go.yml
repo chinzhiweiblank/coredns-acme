@@ -23,3 +23,12 @@ jobs:
 
     - name: Test
       run: go test -v ./...
+    
+    - name: Build with CoreDNS binary
+      run: 
+        git clone https://github.com/coredns/coredns
+        cd coredns
+        go mod edit -require=github.com/chinzhiweiblank/coredns-acme@$GITHUB_HEAD_REF
+        echo 'acme:github.com/chinzhiweiblank/coredns-acme' >> plugin.cfg
+        go get -u && go build
+      
