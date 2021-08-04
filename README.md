@@ -175,7 +175,7 @@ git clone https://github.com/coredns/coredns
 
 # Add github.com/chinzhiweiblank/coredns-acme into go.mod
 cd coredns
-go mod edit -require=github.com/chinzhiweiblank/coredns-acme@v1.0.0
+go mod edit -require=github.com/chinzhiweiblank/coredns-acme
 
 # Add acme:github.com/chinzhiweiblank/coredns-acme into the plugin configuration
 echo "acme:github.com/chinzhiweiblank/coredns-acme" >> plugin.cfg
@@ -187,14 +187,7 @@ go build
 #### Docker
 The recommended way is to use a Docker container to build the binary and output it.
 ```
-docker run --rm -v "$PWD":/usr/src -w /usr/src golang:1.16 \
-"""
-git clone https://github.com/coredns/coredns;
-cd coredns;
-go mod edit -require=github.com/chinzhiweiblank/coredns-acme@v1.0.0;
-echo "acme:github.com/chinzhiweiblank/coredns-acme" >> plugin.cfg;
-go get -u && go build;
-"""
+docker run --rm -v "$PWD":/usr/src -w /usr/src golang:1.16 bash -c "git clone https://github.com/coredns/coredns; cd coredns; go mod edit -require=github.com/chinzhiweiblank/coredns-acme; echo 'acme:github.com/chinzhiweiblank/coredns-acme' >> plugin.cfg; go get -u && go build;"
 ```
 
 ### Disclaimer
