@@ -1,4 +1,4 @@
-module github.com/chinzhiweiblank/coredns-acme-plugin
+module github.com/chinzhiweiblank/coredns-acme
 
 go 1.16
 
