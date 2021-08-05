@@ -29,4 +29,5 @@ jobs:
         echo 'acme:github.com/chinzhiweiblank/coredns-acme' >> plugin.cfg
         go mod download github.com/chinzhiweiblank/coredns-acme
         go mod tidy
+        go get github.com/chinzhiweiblank/coredns-acme
         make
