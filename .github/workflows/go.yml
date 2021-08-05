@@ -23,13 +23,3 @@ jobs:
 
     - name: Build
       run: go build -v ./...
-  build-binary:
-    - name: Build with CoreDNS binary
-      run: |
-        git clone https://github.com/coredns/coredns
-        cd coredns
-        echo 'acme:github.com/chinzhiweiblank/coredns-acme' >> plugin.cfg
-        go get github.com/chinzhiweiblank/coredns-acme
-        go generate
-        go mod tidy
-        go build
