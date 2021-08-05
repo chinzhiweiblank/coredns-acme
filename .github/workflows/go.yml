@@ -23,6 +23,7 @@ jobs:
 
     - name: Build with CoreDNS binary
       run: |
+        go get
         git clone https://github.com/coredns/coredns
         cd coredns
         go mod edit -require=github.com/chinzhiweiblank/coredns-acme@v1.0.1
