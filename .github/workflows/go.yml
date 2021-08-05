@@ -27,5 +27,4 @@ jobs:
         cd coredns
         go mod edit -require=github.com/chinzhiweiblank/coredns-acme@v1.0.1
         echo 'acme:github.com/chinzhiweiblank/coredns-acme' >> plugin.cfg
-        go mod download github.com/chinzhiweiblank/coredns-acme
         make
