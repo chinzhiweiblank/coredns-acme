@@ -2,7 +2,7 @@ name: Release
 
 on:
   release:
-    types: [published]
+    types: [created]
 
 jobs:
   build-binary:
@@ -24,3 +24,9 @@ jobs:
         go generate
         go mod tidy
         go build
+    - name: Upload the artifacts
+      uses: skx/github-action-publish-binaries@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        args: 'coredns'
