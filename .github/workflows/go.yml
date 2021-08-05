@@ -24,7 +24,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     needs: test
-    if: ${{ github.ref == 'refs/heads/main' }}
     steps:
     - uses: actions/checkout@v2
   
@@ -37,7 +36,7 @@ jobs:
       run: |
         git clone https://github.com/coredns/coredns
         cd coredns
-        go get -u github.com/chinzhiweiblank/coredns-acme@$GITHUB_SHA
+        go mod download github.com/chinzhiweiblank/coredns-acme
         go mod edit -require=github.com/chinzhiweiblank/coredns-acme
         echo 'acme:github.com/chinzhiweiblank/coredns-acme' >> plugin.cfg
-        go get -u && go build
+        make

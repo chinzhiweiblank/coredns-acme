@@ -183,9 +183,8 @@ echo "acme:github.com/chinzhiweiblank/coredns-acme" >> plugin.cfg
 # Add the path of the plugin in the go modules
 go mod edit -replace github.com/chinzhiweiblank/coredns-acme=../coredns-acme
 
-# Get the modules and compile
-go get -u
-go build
+# Compile
+make
 ```
 
 ### Disclaimer
