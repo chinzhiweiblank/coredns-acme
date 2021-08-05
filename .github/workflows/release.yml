@@ -1,0 +1,32 @@
+name: Release
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  build-binary:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.16
+
+    - name: Build with CoreDNS binary
+      run: |
+        git clone https://github.com/coredns/coredns
+        cd coredns
+        echo 'acme:github.com/chinzhiweiblank/coredns-acme' >> plugin.cfg
+        go get github.com/chinzhiweiblank/coredns-acme
+        go generate
+        go mod tidy
+        go build
+    - name: Upload the artifacts
+      uses: skx/github-action-publish-binaries@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        args: 'coredns'
