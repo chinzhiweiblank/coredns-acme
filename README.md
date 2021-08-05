@@ -172,22 +172,24 @@ If you have Golang installed, you can execute the script below to build the bina
 ```bash
 # Clone CoreDNS
 git clone https://github.com/coredns/coredns
-
-# Add github.com/chinzhiweiblank/coredns-acme into go.mod
 cd coredns
-go mod edit -require=github.com/chinzhiweiblank/coredns-acme
 
 # Add acme:github.com/chinzhiweiblank/coredns-acme into the plugin configuration
 echo "acme:github.com/chinzhiweiblank/coredns-acme" >> plugin.cfg
 
-# Get the modules and compile
-go get -u
-go build
+# Get the modules
+go get github.com/chinzhiweiblank/coredns-acme
+
+# Tidy the modules
+go mod tidy
+
+# Compile
+go generate && go build
 ```
 #### Docker
 The recommended way is to use a Docker container to build the binary and output it.
 ```
-docker run --rm -v "$PWD":/usr/src -w /usr/src golang:1.16 bash -c "git clone https://github.com/coredns/coredns; cd coredns; go mod edit -require=github.com/chinzhiweiblank/coredns-acme; echo 'acme:github.com/chinzhiweiblank/coredns-acme' >> plugin.cfg; go get -u && go build;"
+docker run --rm -v "$PWD":/usr/src -w /usr/src golang:1.16 bash -c "git clone https://github.com/coredns/coredns; cd coredns; echo 'acme:github.com/chinzhiweiblank/coredns-acme' >> plugin.cfg; go get github.com/chinzhiweiblank/coredns-acme; go mod tidy; go generate && go build;"
 ```
 
 ### Disclaimer
