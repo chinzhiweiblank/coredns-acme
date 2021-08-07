@@ -180,16 +180,19 @@ echo "acme:github.com/chinzhiweiblank/coredns-acme" >> plugin.cfg
 # Get the modules
 go get github.com/chinzhiweiblank/coredns-acme
 
+# Generate Files
+go generate
+
 # Tidy the modules
 go mod tidy
 
 # Compile
-go generate && go build
+go build
 ```
 #### Docker
 The recommended way is to use a Docker container to build the binary and output it.
 ```
-docker run --rm -v "$PWD":/usr/src -w /usr/src golang:1.16 bash -c "git clone https://github.com/coredns/coredns; cd coredns; echo 'acme:github.com/chinzhiweiblank/coredns-acme' >> plugin.cfg; go get github.com/chinzhiweiblank/coredns-acme; go mod tidy; go generate && go build;"
+docker run --rm -v "$PWD":/usr/src -w /usr/src golang:1.16 bash -c "git clone https://github.com/coredns/coredns; cd coredns; echo 'acme:github.com/chinzhiweiblank/coredns-acme' >> plugin.cfg; go get github.com/chinzhiweiblank/coredns-acme; go generate; go mod tidy; go build;"
 ```
 
 ### Disclaimer
