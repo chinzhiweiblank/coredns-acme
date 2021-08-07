@@ -9,31 +9,45 @@ import (
 	"github.com/libdns/libdns"
 )
 
-type Provider struct {
-	recordsForZone map[string][]libdns.Record
-	m              sync.Mutex
+type RecordStore struct {
+	entries []libdns.Record
 }
 
-func (p *Provider) listAllRecords(ctx context.Context, zone string) []libdns.Record {
-	records, found := p.recordsForZone[zone]
+type Provider struct {
+	sync.Mutex
+	recordMap map[string]*RecordStore
+	// m              sync.Mutex
+}
+
+func (p *Provider) getZoneRecords(ctx context.Context, zoneName string) *RecordStore {
+	records, found := p.recordMap[zoneName]
 	if !found {
-		return []libdns.Record{}
+		return nil
 	}
 	return records
 }
 
-func (p *Provider) AppendRecords(ctx context.Context, zone string, recs []libdns.Record) ([]libdns.Record, error) {
-	p.m.Lock()
-	defer p.m.Unlock()
-	records := p.listAllRecords(ctx, zone)
-	records = append(records, recs...)
-	p.recordsForZone[zone] = records
-	return recs, nil
+func (p *Provider) AppendRecords(ctx context.Context, zoneName string, recs []libdns.Record) ([]libdns.Record, error) {
+	p.Lock()
+	defer p.Unlock()
+	zoneRecordStore := p.getZoneRecords(ctx, zoneName)
+	if zoneRecordStore == nil {
+		zoneRecordStore = new(RecordStore)
+		p.recordMap[zoneName] = zoneRecordStore
+	}
+	zoneRecordStore.entries = append(zoneRecordStore.entries, recs...)
+	return zoneRecordStore.entries, nil
 }
 
-func (p *Provider) DeleteRecords(ctx context.Context, zone string, recs []libdns.Record) ([]libdns.Record, error) {
-	p.m.Lock()
-	defer p.m.Unlock()
+func (p *Provider) DeleteRecords(ctx context.Context, zoneName string, recs []libdns.Record) ([]libdns.Record, error) {
+	p.Lock()
+	defer p.Unlock()
+	var r libdns.Record
+	zoneRecordStore := p.getZoneRecords(ctx, zoneName)
+	if zoneRecordStore == nil {
+		return nil, nil
+	}
+	zoneRecordStore.deleteRecords(recs)
 	deletedRecords := []libdns.Record{}
 	remainingRecords := []libdns.Record{}
 	records := p.listAllRecords(ctx, zone)
@@ -52,7 +66,7 @@ func (p *Provider) DeleteRecords(ctx context.Context, zone string, recs []libdns
 			deletedRecords = append(deletedRecords, record)
 		}
 	}
-	p.recordsForZone[zone] = remainingRecords
+	p.recordMap[zone] = remainingRecords
 	return deletedRecords, nil
 }
 
