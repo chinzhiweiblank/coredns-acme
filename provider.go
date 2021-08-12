@@ -3,7 +3,6 @@ package acme
 import (
 	"context"
 	"fmt"
-	"reflect"
 	"sync"
 
 	"github.com/libdns/libdns"
@@ -16,7 +15,6 @@ type RecordStore struct {
 type Provider struct {
 	sync.Mutex
 	recordMap map[string]*RecordStore
-	// m              sync.Mutex
 }
 
 func (p *Provider) getZoneRecords(ctx context.Context, zoneName string) *RecordStore {
@@ -27,6 +25,18 @@ func (p *Provider) getZoneRecords(ctx context.Context, zoneName string) *RecordS
 	return records
 }
 
+func (r *RecordStore) deleteRecords(recs []libdns.Record) []libdns.Record {
+	deletedRecords := []libdns.Record{}
+	for i, entry := range r.entries {
+		for _, record := range recs {
+			if r.compareRecords(entry, record) {
+				deletedRecords = append(deletedRecords, record)
+				r.entries = append(r.entries[:i], r.entries[i+1:]...)
+			}
+		}
+	}
+	return deletedRecords
+}
 func (p *Provider) AppendRecords(ctx context.Context, zoneName string, recs []libdns.Record) ([]libdns.Record, error) {
 	p.Lock()
 	defer p.Unlock()
@@ -42,42 +52,26 @@ func (p *Provider) AppendRecords(ctx context.Context, zoneName string, recs []li
 func (p *Provider) DeleteRecords(ctx context.Context, zoneName string, recs []libdns.Record) ([]libdns.Record, error) {
 	p.Lock()
 	defer p.Unlock()
-	var r libdns.Record
 	zoneRecordStore := p.getZoneRecords(ctx, zoneName)
 	if zoneRecordStore == nil {
 		return nil, nil
 	}
-	zoneRecordStore.deleteRecords(recs)
-	deletedRecords := []libdns.Record{}
-	remainingRecords := []libdns.Record{}
-	records := p.listAllRecords(ctx, zone)
-	shouldDelete := make([]bool, len(records))
-	for _, deleteRecord := range recs {
-		for i, record := range records {
-			if reflect.DeepEqual(deleteRecord, record) {
-				shouldDelete[i] = true
-			}
-		}
-	}
-	for i, record := range records {
-		if !shouldDelete[i] {
-			remainingRecords = append(remainingRecords, record)
-		} else {
-			deletedRecords = append(deletedRecords, record)
-		}
-	}
-	p.recordMap[zone] = remainingRecords
+	deletedRecords := zoneRecordStore.deleteRecords(recs)
 	return deletedRecords, nil
 }
 
-func (p *Provider) GetRecords(ctx context.Context, zone string) ([]libdns.Record, error) {
-	p.m.Lock()
-	defer p.m.Unlock()
-	records := p.listAllRecords(ctx, zone)
-	if len(records) == 0 {
-		return records, fmt.Errorf("no records were found for %v", zone)
+func (p *Provider) GetRecords(ctx context.Context, zoneName string) ([]libdns.Record, error) {
+	p.Lock()
+	defer p.Unlock()
+	records := p.getZoneRecords(ctx, zoneName)
+	if records == nil {
+		return nil, fmt.Errorf("no records were found for %v", zoneName)
 	}
-	return records, nil
+	return records.entries, nil
+}
+
+func (r *RecordStore) compareRecords(a, b libdns.Record) bool {
+	return a.Type == b.Type && a.Name == b.Name && a.Value == b.Value && a.TTL == b.TTL
 }
 
 var (
