@@ -11,7 +11,6 @@ import (
 	"github.com/coredns/coredns/core/dnsserver"
 	"github.com/coredns/coredns/plugin"
 	"github.com/coredns/coredns/plugin/pkg/log"
-	"github.com/libdns/libdns"
 )
 
 const pluginName = "acme"
@@ -23,7 +22,7 @@ func init() {
 func setup(c *caddy.Controller) error {
 	acmeTemplate, zone, err := parseACME(c)
 	provider := Provider{
-		recordsForZone: make(map[string][]libdns.Record),
+		recordMap: make(map[string]*RecordStore),
 	}
 	if err != nil {
 		return plugin.Error(pluginName, err)

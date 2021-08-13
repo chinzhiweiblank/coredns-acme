@@ -25,11 +25,15 @@ func (p *Provider) getZoneRecords(ctx context.Context, zoneName string) *RecordS
 	return records
 }
 
+func compareRecords(a, b libdns.Record) bool {
+	return a.Type == b.Type && a.Name == b.Name && a.Value == b.Value && a.TTL == b.TTL
+}
+
 func (r *RecordStore) deleteRecords(recs []libdns.Record) []libdns.Record {
 	deletedRecords := []libdns.Record{}
 	for i, entry := range r.entries {
 		for _, record := range recs {
-			if r.compareRecords(entry, record) {
+			if compareRecords(entry, record) {
 				deletedRecords = append(deletedRecords, record)
 				r.entries = append(r.entries[:i], r.entries[i+1:]...)
 			}
@@ -68,10 +72,6 @@ func (p *Provider) GetRecords(ctx context.Context, zoneName string) ([]libdns.Re
 		return nil, fmt.Errorf("no records were found for %v", zoneName)
 	}
 	return records.entries, nil
-}
-
-func (r *RecordStore) compareRecords(a, b libdns.Record) bool {
-	return a.Type == b.Type && a.Name == b.Name && a.Value == b.Value && a.TTL == b.TTL
 }
 
 var (
