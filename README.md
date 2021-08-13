@@ -6,9 +6,7 @@
 Note: If you already use CoreDNS and know how SSL and ACME works, you can go straight to the [installation and configuration](#getting-started). You can also read the [RFC](https://github.com/coredns/rfc/pull/12).
 
 
-If you have ever setup SSL certificates from [Let's Encrypt](https://letsencrypt.org) for your site, you would know it is important to renew certificates or else visitors will get greeted with errors about your expired certificate. Let's Encrypt SSL certificates will get expired within 90 days of installation. You must renew it before it gets expired.
-
-This plugin is a solution that automates certificate management through the `ACME` protocol, because managing certificates manually exposes you to security risks, manpower and time wastage. Users can forget to renew the certificates or take a lot of effort and time to do it manually.
+If you have ever setup SSL certificates from [Let's Encrypt](https://letsencrypt.org), you would know that renewing them are important as certificates expire within 90 days of installation. This plugin is a solution that automates certificate management through the `ACME` protocol.
 
 # Table of Contents
 1. [What is ACME and why do you need it?](#what-is-acme-and-why-do-you-need-it)
