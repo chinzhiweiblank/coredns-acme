@@ -1,13 +1,15 @@
 package acme
 
 import (
-	"reflect"
 	"testing"
 
 	"github.com/caddyserver/certmagic"
 	"github.com/coredns/caddy"
 )
 
+func compareAcmeTemplate(a, b certmagic.ACMEManager) bool {
+	return a.DisableHTTPChallenge == b.DisableHTTPChallenge && a.AltTLSALPNPort == b.AltTLSALPNPort && a.AltHTTPPort == b.AltHTTPPort && a.DisableTLSALPNChallenge == b.DisableTLSALPNChallenge
+}
 func TestSetup(t *testing.T) {
 	tests := []struct {
 		name         string
@@ -25,8 +27,8 @@ func TestSetup(t *testing.T) {
 			certmagic.ACMEManager{
 				DisableHTTPChallenge:    true,
 				DisableTLSALPNChallenge: true,
-				AltHTTPPort:             80,
-				AltTLSALPNPort:          443,
+				AltHTTPPort:             0,
+				AltTLSALPNPort:          0,
 			},
 			"test.domain",
 		},
@@ -35,28 +37,28 @@ func TestSetup(t *testing.T) {
 			`acme {
 				domain test.domain
 				challenge http port 89
-				challenge tlsalpn port 8080
+				challenge tlsalpn port 8081
 			}`,
 			false,
 			certmagic.ACMEManager{
 				DisableHTTPChallenge:    false,
 				DisableTLSALPNChallenge: false,
 				AltHTTPPort:             89,
-				AltTLSALPNPort:          90,
+				AltTLSALPNPort:          8081,
 			},
 			"test.domain",
 		},
 		{
-			"Correct Config with default http01 port",
+			"Correct Config with tlsalpn port",
 			`acme {
 				domain test.domain
 				challenge tlsalpn port 90
 			}`,
 			false,
 			certmagic.ACMEManager{
-				DisableHTTPChallenge:    false,
+				DisableHTTPChallenge:    true,
 				DisableTLSALPNChallenge: false,
-				AltHTTPPort:             80,
+				AltHTTPPort:             0,
 				AltTLSALPNPort:          90,
 			},
 			"test.domain",
@@ -64,7 +66,7 @@ func TestSetup(t *testing.T) {
 		{
 			"Missing domain",
 			`acme {
-				http01 hello
+				http hello
 			}`,
 			true,
 			certmagic.ACMEManager{},
@@ -90,6 +92,16 @@ func TestSetup(t *testing.T) {
 			certmagic.ACMEManager{},
 			"test.domain",
 		},
+		{
+			"Invalid challenge format",
+			`acme {
+				domain test.domain
+				challenge http 90
+			`,
+			true,
+			certmagic.ACMEManager{},
+			"test.domain",
+		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -97,8 +109,14 @@ func TestSetup(t *testing.T) {
 			acmeTemplate, zoneName, err := parseACME(c)
 			if (err != nil) != test.shouldErr {
 				t.Errorf("Error: setup() error = %v, shouldErr %v", err, test.shouldErr)
-				if !test.shouldErr && err != nil && reflect.DeepEqual(test.acmeTemplate, acmeTemplate) && test.zoneName == zoneName {
-					t.Errorf("Error: AcmeTemplate %+v Zone %s is not configured as it should be %+v", acmeTemplate, zoneName, test.acmeTemplate)
+			} else {
+				if !test.shouldErr {
+					if !compareAcmeTemplate(test.acmeTemplate, acmeTemplate) {
+						t.Errorf("Error: AcmeTemplate %+v is not configured as it should be %+v", acmeTemplate, test.acmeTemplate)
+					}
+					if test.zoneName != zoneName {
+						t.Errorf("Error: Expected zone %s but got %+v", test.zoneName, zoneName)
+					}
 				}
 			}
 		})
