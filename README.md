@@ -1,5 +1,6 @@
 # acme
 ![CI Workflow](https://github.com/chinzhiweiblank/coredns-acme/actions/workflows/go.yml/badge.svg)
+[![codecov](https://codecov.io/gh/chinzhiweiblank/coredns-acme/branch/main/graph/badge.svg)](https://codecov.io/gh/chinzhiweiblank/coredns-acme)
 
 ![ACME](img/ACME.png)
 
