@@ -105,41 +105,39 @@ func parseACME(c *caddy.Controller) (certmagic.ACMEManager, string, error) {
 		DisableTLSALPNChallenge: true,
 	}
 	var zoneName string
-	for c.Next() {
-		for c.NextBlock() {
-			term := strings.ToLower(c.Val())
-			switch term {
-			case DOMAIN:
-				args := c.RemainingArgs()
-				if len(args) > 1 {
-					return acmeTemplate, zoneName, c.Errf("Unexpected number of arguments: %#v", args)
-				}
-				zoneName = args[0]
-			case CHALLENGE:
-				args := c.RemainingArgs()
-				challenge := args[0]
-				if !(len(args) == 3 && args[1] == PORT) {
-					return acmeTemplate, zoneName, c.Errf("unexpected number of arguments", args)
-				}
-				port, err := strconv.Atoi(args[2])
-				if err != nil {
-					return acmeTemplate, zoneName, c.Errf("%s port is not an int: %#v", challenge, args)
-				}
-				switch challenge {
-				case HTTPChallenge:
-					acmeTemplate.AltHTTPPort = port
-					acmeTemplate.DisableHTTPChallenge = false
-				case TLPSALPNChallenge:
-					acmeTemplate.AltTLSALPNPort = port
-					acmeTemplate.DisableTLSALPNChallenge = false
-				default:
-					return acmeTemplate, zoneName, c.Errf("unexpected challenge: %s. challenge should only be tlsalpn or http", challenge)
-				}
-			default:
-				return acmeTemplate, zoneName, c.Errf("unexpected term: %s: term should only be challenge or domain", term)
+	for c.NextBlock() {
+		term := strings.ToLower(c.Val())
+		switch term {
+		case DOMAIN:
+			args := c.RemainingArgs()
+			if len(args) > 1 {
+				return acmeTemplate, zoneName, c.Errf("unexpected number of arguments: %#v", args)
 			}
+			zoneName = args[0]
+		case CHALLENGE:
+			args := c.RemainingArgs()
+			challenge := args[0]
+			if !(len(args) == 3 && args[1] == PORT) {
+				return acmeTemplate, zoneName, c.Errf("unexpected number of arguments: %#v", args)
+			}
+			port, err := strconv.Atoi(args[2])
+			if err != nil {
+				return acmeTemplate, zoneName, c.Errf("%s port is not an int: %#v", challenge, args)
+			}
+			switch challenge {
+			case HTTPChallenge:
+				acmeTemplate.AltHTTPPort = port
+				acmeTemplate.DisableHTTPChallenge = false
+			case TLPSALPNChallenge:
+				acmeTemplate.AltTLSALPNPort = port
+				acmeTemplate.DisableTLSALPNChallenge = false
+			default:
+				return acmeTemplate, zoneName, c.Errf("unexpected challenge %s: challenge should only be tlsalpn or http", challenge)
+			}
+		default:
+			return acmeTemplate, zoneName, c.Errf("unexpected term: %s: term should only be challenge or domain", term)
 		}
 	}
-	acmeTemplate.CA = certmagic.LetsEncryptStagingCA
+	acmeTemplate.CA = certmagic.LetsEncryptProductionCA
 	return acmeTemplate, zoneName, nil
 }
