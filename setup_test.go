@@ -14,11 +14,13 @@ func TestSetup(t *testing.T) {
 		input        string
 		shouldErr    bool
 		acmeTemplate certmagic.ACMEManager
-		zone         string
+		zoneName     string
 	}{
 		{
 			"Correct Config with only DNS challenge",
-			`acme test.domain`,
+			`acme {
+				domain test.domain
+			}`,
 			false,
 			certmagic.ACMEManager{
 				DisableHTTPChallenge:    true,
@@ -30,9 +32,10 @@ func TestSetup(t *testing.T) {
 		},
 		{
 			"Correct Config with correct challenge",
-			`acme test.domain {
-				http01 89
-				tlsalpn 90
+			`acme {
+				domain test.domain
+				challenge http port 89
+				challenge tlsalpn port 8080
 			}`,
 			false,
 			certmagic.ACMEManager{
@@ -45,8 +48,9 @@ func TestSetup(t *testing.T) {
 		},
 		{
 			"Correct Config with default http01 port",
-			`acme test.domain {
-				tlsalpn 90
+			`acme {
+				domain test.domain
+				challenge tlsalpn port 90
 			}`,
 			false,
 			certmagic.ACMEManager{
@@ -68,8 +72,9 @@ func TestSetup(t *testing.T) {
 		},
 		{
 			"Invalid port",
-			`acme test.domain {
-				http01 hello
+			`acme {
+				domain test.domain
+				challenge http port hello
 			}`,
 			true,
 			certmagic.ACMEManager{},
@@ -77,7 +82,8 @@ func TestSetup(t *testing.T) {
 		},
 		{
 			"Invalid challenge",
-			`acme test.domain {
+			`acme {
+				domain test.domain
 				invalid_challenge
 			`,
 			true,
@@ -88,11 +94,11 @@ func TestSetup(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			c := caddy.NewTestController("acme", test.input)
-			acmeTemplate, zone, err := parseACME(c)
+			acmeTemplate, zoneName, err := parseACME(c)
 			if (err != nil) != test.shouldErr {
 				t.Errorf("Error: setup() error = %v, shouldErr %v", err, test.shouldErr)
-				if !test.shouldErr && err != nil && reflect.DeepEqual(test.acmeTemplate, acmeTemplate) && test.zone == zone {
-					t.Errorf("Error: AcmeTemplate %+v Zone %s is not configured as it should be %+v", acmeTemplate, zone, test.acmeTemplate)
+				if !test.shouldErr && err != nil && reflect.DeepEqual(test.acmeTemplate, acmeTemplate) && test.zoneName == zoneName {
+					t.Errorf("Error: AcmeTemplate %+v Zone %s is not configured as it should be %+v", acmeTemplate, zoneName, test.acmeTemplate)
 				}
 			}
 		})
